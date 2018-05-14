@@ -15,7 +15,7 @@ lazy val core = (project in file("core"))
     )
   )
 
-lazy val `test-utils` = (project in file("test"))
+lazy val `test-utils` = (project in file("test-utils"))
   .settings(moduleName := "ftypes-test")
   .dependsOn(core % "test->test;compile->compile")
   .settings(

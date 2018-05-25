@@ -2,6 +2,7 @@ package ftypes.test.logging
 
 import cats.effect.Effect
 import ftypes.Logging
+import ftypes.LoggingMacros
 
 case class PrintLog[F[_]](level: LogLevel)(implicit F: Effect[F]) extends Logging[F] {
 
@@ -17,25 +18,27 @@ case class PrintLog[F[_]](level: LogLevel)(implicit F: Effect[F]) extends Loggin
     }
   }
 
-  def trace(message: => String): F[Unit] =
+  override def get: Logging[F] = macro LoggingMacros.selfMaterializer[F]
+
+  override def trace(message: => String): F[Unit] =
     render(Trace, message)
-  def trace(message: => String, ex: Throwable): F[Unit] =
+  override def trace(message: => String, ex: Throwable): F[Unit] =
     render(Trace, message, ex)
-  def debug(message: => String): F[Unit] =
+  override def debug(message: => String): F[Unit] =
     render(Debug, message)
-  def debug(message: => String, ex: Throwable): F[Unit] =
+  override def debug(message: => String, ex: Throwable): F[Unit] =
     render(Debug, message, ex)
-  def info(message: => String): F[Unit] =
+  override def info(message: => String): F[Unit] =
     render(Info, message)
-  def info(message: => String, ex: Throwable): F[Unit] =
+  override def info(message: => String, ex: Throwable): F[Unit] =
     render(Info, message, ex)
-  def warn(message: => String): F[Unit] =
+  override def warn(message: => String): F[Unit] =
     render(Warn, message)
-  def warn(message: => String, ex: Throwable): F[Unit] =
+  override def warn(message: => String, ex: Throwable): F[Unit] =
     render(Warn, message, ex)
-  def error(message: => String): F[Unit] =
+  override def error(message: => String): F[Unit] =
     render(Error, message)
-  def error(message: => String, ex: Throwable): F[Unit] =
+  override def error(message: => String, ex: Throwable): F[Unit] =
     render(Error, message, ex)
 }
 

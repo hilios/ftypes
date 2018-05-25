@@ -2,6 +2,7 @@ package ftypes.test.logging
 
 import cats.effect.Sync
 import ftypes.Logging
+import ftypes.LoggingMacros
 import ftypes.test.logging.SilentLog.LogMessage
 
 import scala.collection.mutable
@@ -15,27 +16,29 @@ case class SilentLog[F[_]]()(implicit F: Sync[F]) extends Logging[F] {
     ()
   }
 
-  def get: List[LogMessage] = logs.toList.reverse
+  def messages: List[LogMessage] = logs.toList.reverse
 
-  def trace(message: => String): F[Unit] =
+  override def get: Logging[F] = macro LoggingMacros.selfMaterializer[F]
+
+  override def trace(message: => String): F[Unit] =
     accumulate(Trace, message, None)
-  def trace(message: => String, ex: Throwable): F[Unit] =
+  override def trace(message: => String, ex: Throwable): F[Unit] =
     accumulate(Trace, message, None)
-  def debug(message: => String): F[Unit] =
+  override def debug(message: => String): F[Unit] =
     accumulate(Debug, message, None)
-  def debug(message: => String, ex: Throwable): F[Unit] =
+  override def debug(message: => String, ex: Throwable): F[Unit] =
     accumulate(Debug, message, None)
-  def info(message: => String): F[Unit] =
+  override def info(message: => String): F[Unit] =
     accumulate(Info, message, None)
-  def info(message: => String, ex: Throwable): F[Unit] =
+  override def info(message: => String, ex: Throwable): F[Unit] =
     accumulate(Info, message, None)
-  def warn(message: => String): F[Unit] =
+  override def warn(message: => String): F[Unit] =
     accumulate(Warn, message, None)
-  def warn(message: => String, ex: Throwable): F[Unit] =
+  override def warn(message: => String, ex: Throwable): F[Unit] =
     accumulate(Warn, message, None)
-  def error(message: => String): F[Unit] =
+  override def error(message: => String): F[Unit] =
     accumulate(Error, message, None)
-  def error(message: => String, ex: Throwable): F[Unit] =
+  override def error(message: => String, ex: Throwable): F[Unit] =
     accumulate(Error, message, None)
 }
 

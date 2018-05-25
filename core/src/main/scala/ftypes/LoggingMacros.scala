@@ -6,7 +6,10 @@ import org.slf4j.Logger
 import scala.annotation.tailrec
 import scala.reflect.macros.blackbox
 
-class LoggingMacros(val c: blackbox.Context) {
+/**
+  * Macros to infer the SLF4J logger instance automatically
+  */
+private[ftypes] class LoggingMacros(val c: blackbox.Context) {
   import c.universe._
 
   @tailrec private def getClassSymbol(s: Symbol): Symbol = if (s.isClass || s.isModule) s

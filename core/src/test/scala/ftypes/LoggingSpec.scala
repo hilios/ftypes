@@ -16,7 +16,7 @@ class LoggingSpec extends FlatSpec with Matchers {
     t.prog.unsafeRunSync()
   }
 
-  "#getLogger" should "return a logging instance with the slf4j logger for the caller class" in {
+  "#get" should "return a logging instance with the slf4j logger for the caller class" in {
     val t = new TestLogging[IO]
     t.log.logger.getName shouldBe "ftypes.LoggingSpec.TestLogging"
   }

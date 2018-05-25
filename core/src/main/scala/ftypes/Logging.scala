@@ -5,6 +5,9 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.reflect.ClassTag
 
+/**
+  * Suspend logging side-effects allowing monadic composition in terms of a Sync effect.
+  */
 class Logging[F[_]](val logger: Logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME))(implicit F: Sync[F]) {
 
   def get: Logging[F] = macro LoggingMacros.materializeLogging[F]

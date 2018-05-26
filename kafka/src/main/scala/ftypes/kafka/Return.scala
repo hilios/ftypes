@@ -1,14 +1,10 @@
 package ftypes.kafka
 
-sealed trait Return {
-  def record: DefaultConsumerRecord
+sealed trait Return[F[_]] {
+  def message: KafkaMessage[F]
 }
 
 object Return {
-  final case class Ack(record: DefaultConsumerRecord)   extends Return
-  final case class Error(record: DefaultConsumerRecord) extends Return
-
-  def apply[F[_]](consumerRecord: DefaultConsumerRecord): Return = new Return {
-    def record: DefaultConsumerRecord = consumerRecord
-  }
+  final case class Ack[F[_]](message: KafkaMessage[F])   extends Return[F]
+  final case class Error[F[_]](message: KafkaMessage[F]) extends Return[F]
 }

@@ -5,16 +5,16 @@ import cats.effect.Sync
 
 object consumers {
 
-  type KafkaService[F[_]] = Kleisli[F, DefaultConsumerRecord, Return]
+  type KafkaService[F[_], G[_]] = Kleisli[F, KafkaMessage[G], Return[G]]
 
   object KafkaService {
-    def apply[F[_]](f: DefaultConsumerRecord => F[Return]): KafkaService[F] = Kleisli(f)
+    def apply[F[_]](f: KafkaMessage[F] => F[Return[F]]): KafkaService[F, F] = Kleisli(f)
   }
 
-  type KafkaConsumer[F[_]] = KafkaService[OptionT[F, ?]]
+  type KafkaConsumer[F[_]] = KafkaService[OptionT[F, ?], F]
 
   object KafkaConsumer {
-    def apply[F[_]: Sync](pf: PartialFunction[DefaultConsumerRecord, F[Return]]): KafkaConsumer[F] = {
+    def apply[F[_]: Sync](pf: PartialFunction[KafkaMessage[F], F[Return[F]]]): KafkaConsumer[F] = {
       Kleisli(record => pf.andThen(OptionT.liftF(_)).applyOrElse(record, Function.const(OptionT.none)))
     }
   }

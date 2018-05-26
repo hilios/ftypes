@@ -1,9 +1,10 @@
 package ftypes.kafka
 
+import ftypes.kafka.serializers.{KafkaDecoder, KafkaEncoder}
 import io.circe.parser.{decode => jsonDecoder}
 import io.circe.{Decoder, Encoder, Printer}
 
-object circe {
+object circe extends SerializerImplicits {
   private[this] val defaultPrinter = Printer.noSpaces.copy(dropNullValues = true)
 
   implicit def circeKafkaEncoder[T](implicit encoder: Encoder[T], printer: Printer = defaultPrinter): KafkaEncoder[T] =

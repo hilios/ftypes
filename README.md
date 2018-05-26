@@ -1,8 +1,8 @@
 # ftypes
 
-#### General purpose type classes for building FP programs in Scala. 
+### General purpose type classes for building FP programs in Scala.
 
-### Overview
+## Overview
 
 Ftypes is a collection of opinionated, general purpose type classes for writing pure functional programming in Scala. 
 Providing common functionality that several applications needs as logging or managing the lifecycle and dependencies of
@@ -14,7 +14,7 @@ Leveraging [cats-effect](https://github.com/typelevel/cats-effect) to suspend si
 compromise about effect it self.
 
 In practice one can use any implementation of `Effect[F]` type class - being `F` the effect class as 
-cats `IO`, Monix `Task` or even Scala's `Future` (:confounded:) – thus providing flexibility to developer to 
+cats `IO`, Monix `Task` or even Scala's `Future` :confounded: – thus providing flexibility to developer to
 choose which one fits best its own application.
 
 The intetion of the type classes found in this library it's to integrate out of the box with other libraries
@@ -134,15 +134,15 @@ final case class Components[F[_]](config: Config, kamon: Kamon[F], httpClient: C
 object Main extends StreamApp[IO] {
   override def stream(args: List[String], requestShutdown: IO[Unit]): Stream[IO, ExitCode] = for {
       // Start the dependencies
-      config     <- Stream.eval(IO(Config[IO]))
+      config     <- Stream.eval { Config[IO] }
       http       <- Http1Client.stream[IO]()
-      kafka      <- Stream.eval(IO((Kafka[IO](config))
-      db         <- Stream.eval(IO(Transactor.fromDriverManager[IO]("org.postgresql.Driver", "jdbc:postgresql:world",
-       "postgres", "")))
+      kafka      <- Stream.eval { Kafka[IO](config) }
+      db         <- Stream.eval { Transactor.fromDriverManager[IO]("org.postgresql.Driver", "jdbc:postgresql:world",
+       "postgres", "") }
 
       // Create the components "singleton"
-      components <- liftS(Components[IO](config, http, kafka))
-      _          <- liftS(components.start)
+      components <- Stream.eval { Components[IO](config, http, kafka) }
+      _          <- Stream.eval { components.start }
 
       // Hook up everything together with the components
       // ...

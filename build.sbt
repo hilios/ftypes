@@ -10,13 +10,14 @@ lazy val core = (project in file("core"))
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "org.slf4j"           % "slf4j-api"        % "1.8.0-beta2",
-      "org.slf4j"           % "slf4j-simple"     % "1.8.0-beta2"
+      "org.slf4j" % "slf4j-api"    % "1.8.0-beta2",
+      "org.slf4j" % "slf4j-simple" % "1.8.0-beta2" % Test,
+      compilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.patch)
     )
   )
 
 lazy val `test-utils` = (project in file("test-utils"))
-  .settings(moduleName := "ftypes-test")
+  .settings(moduleName := "ftypes-test-utils")
   .dependsOn(core % "test->test;compile->compile")
   .settings(
     inThisBuild(commonSettings),
@@ -54,6 +55,7 @@ lazy val commonSettings = Seq(
     "org.scalatest"      %% "scalatest"        % "3.0.5"    % Test,
     "org.typelevel"      %% "cats-core"        % "1.1.0"    % Provided,
     "org.typelevel"      %% "cats-effect"      % "1.0.0-RC" % Provided,
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
   ),
   autoCompilerPlugins := true,
   fork in test := true,

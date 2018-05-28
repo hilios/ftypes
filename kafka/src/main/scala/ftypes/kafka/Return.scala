@@ -5,6 +5,6 @@ sealed trait Return[F[_]] {
 }
 
 object Return {
-  final case class Ack[F[_]](message: KafkaMessage[F])   extends Return[F]
-  final case class Error[F[_]](message: KafkaMessage[F]) extends Return[F]
+  final case class Ack[F[_]](message: KafkaMessage[F])                  extends Return[F]
+  final case class Error[F[_]](message: KafkaMessage[F], ex: Throwable) extends Return[F]
 }

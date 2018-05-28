@@ -1,6 +1,5 @@
 package ftypes.kafka
 
-import cats.data.OptionT
 import cats.effect.IO
 import cats.implicits._
 import ftypes.kafka.Return.{Ack, Error}
@@ -10,7 +9,7 @@ import org.scalatest._
 
 class KafkaSpec extends FlatSpec with Matchers with KafkaDsl {
 
-  def createRecord[T](topic: String, message: T)(implicit E: KafkaEncoder[T]) =
+  def createRecord[T](topic: String, message: T)(implicit E: KafkaEncoder[T]): KafkaMessage[IO] =
     KafkaMessage[IO, T](topic, message)
 
   "KafkaService" should "return an function that run a KafkaMessage" in {
@@ -37,22 +36,25 @@ class KafkaSpec extends FlatSpec with Matchers with KafkaDsl {
     val msgEs = createRecord("my-topic-es", "¡Hola, Mundo!")
 
     val helloKafka: KafkaConsumer[IO] = KafkaConsumer {
-      case record @ Topic("my-topic-en") => Ack[IO](record).pure[IO]
+      case Topic("my-topic-en") => IO.pure(())
     }
 
     val olaKafka: KafkaConsumer[IO] = KafkaConsumer {
-      case record @ Topic("my-topic-pt") => Ack[IO](record).pure[IO]
+      case Topic("my-topic-pt") => IO.pure(())
     }
 
     val service: KafkaConsumer[IO] = helloKafka <+> olaKafka
 
-    def body(msg: KafkaMessage[IO]): OptionT[IO, String] = for {
-      ret  <- service(msg)
-      body <- OptionT.liftF(ret.message.as[String])
+    def body(msg: KafkaMessage[IO]): IO[String] = for {
+      out  <- service.compile(msg)
+      body <- out match {
+        case Ack(m)      => m.as[String]
+        case Error(_, e) => throw e
+      }
     } yield body
 
-    body(msgEn).value.unsafeRunSync() shouldBe Some("Hello, World!")
-    body(msgPt).value.unsafeRunSync() shouldBe Some("Olá, Mundo!")
-    body(msgEs).value.unsafeRunSync() shouldBe None
+    body(msgEn).attempt.unsafeRunSync() shouldBe Right("Hello, World!")
+    body(msgPt).attempt.unsafeRunSync() shouldBe Right("Olá, Mundo!")
+    body(msgEs).attempt.unsafeRunSync() shouldBe a[Left[RuntimeException, _]]
   }
 }

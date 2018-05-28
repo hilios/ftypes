@@ -11,10 +11,10 @@ object consumers {
     def apply[F[_]](f: KafkaMessage[F] => F[Return[F]]): KafkaService[F, F] = Kleisli(f)
   }
 
-  type KafkaConsumer[F[_]] = KafkaService[OptionT[F, ?], F]
+  type KafkaConsumer[F[_]] = Kleisli[OptionT[F, ?], KafkaMessage[F], Unit]
 
   object KafkaConsumer {
-    def apply[F[_]: Sync](pf: PartialFunction[KafkaMessage[F], F[Return[F]]]): KafkaConsumer[F] = {
+    def apply[F[_]: Sync](pf: PartialFunction[KafkaMessage[F], F[Unit]]): KafkaConsumer[F] = {
       Kleisli(record => pf.andThen(OptionT.liftF(_)).applyOrElse(record, Function.const(OptionT.none)))
     }
   }

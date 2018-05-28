@@ -2,6 +2,7 @@ package ftypes.kafka
 
 import cats.effect.IO
 import ftypes.kafka.circe._
+import ftypes.kafka.producer.KafkaProducer
 import ftypes.test.logging.PrintLog
 import io.circe.{Decoder, Encoder}
 import io.circe.literal._
@@ -17,7 +18,7 @@ class KafkaCirceSpec extends FlatSpec with Matchers {
 
   val mockConsumer = new MockConsumer[ByteArray, ByteArray](OffsetResetStrategy.EARLIEST)
   val mockProducer = new MockProducer(true, new ByteArraySerializer, new ByteArraySerializer)
-  val kafka = Kafka[IO](mockProducer)
+  val kafka = KafkaProducer[IO](mockProducer)
 
   case class Message(a: String, b: Boolean, c: List[Int])
 

@@ -1,16 +1,17 @@
-package ftypes.kafka
+package ftypes.kafka.producer
 
 import cats.effect.Async
 import cats.implicits._
 import ftypes.kafka.serializers.KafkaEncoder
+import ftypes.kafka.{ByteArray, SingleMessage}
 import ftypes.{Component, Logging}
-import org.apache.kafka.clients.producer.{KafkaProducer, Producer, ProducerRecord, RecordMetadata}
+import org.apache.kafka.clients.producer.{KafkaProducer => ApacheKafkaProducer, Producer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.ByteArraySerializer
 
 import scala.collection.JavaConverters._
 
-case class Kafka[F[_]](producer: Producer[ByteArray, ByteArray])
-                      (implicit F: Async[F], L: Logging[F]) extends Component[F] {
+case class KafkaProducer[F[_]](producer: Producer[ByteArray, ByteArray])
+                              (implicit F: Async[F], L: Logging[F]) extends Component[F] {
 
   def produce[T](message: SingleMessage[T])(implicit e: KafkaEncoder[T]): F[Unit] =
     produce(message._1, message._2)
@@ -35,10 +36,10 @@ case class Kafka[F[_]](producer: Producer[ByteArray, ByteArray])
   def stop: F[Unit] = F.delay(producer.close())
 }
 
-object Kafka {
-  def apply[F[_]](kafkaConf: Map[String, Object])(implicit F: Async[F], L: Logging[F]): Kafka[F] = {
+object KafkaProducer {
+  def apply[F[_]](kafkaConf: Map[String, Object])(implicit F: Async[F], L: Logging[F]): KafkaProducer[F] = {
     val producer: Producer[ByteArray, ByteArray] =
-      new KafkaProducer(kafkaConf.asJava, new ByteArraySerializer, new ByteArraySerializer)
+      new ApacheKafkaProducer(kafkaConf.asJava, new ByteArraySerializer, new ByteArraySerializer)
     apply[F](producer)
   }
 }

@@ -1,9 +1,10 @@
-package ftypes.kafka
+package ftypes.kafka.consumer
 
 import cats.effect.Sync
+import ftypes.kafka.DefaultConsumerRecord
 import ftypes.kafka.serializers.{KafkaDecoder, KafkaEncoder}
 
-trait KafkaMessage[F[_]] {
+trait Message[F[_]] {
   def keyAs[T](implicit D: KafkaDecoder[T]): F[T]
 
   def as[T](implicit D: KafkaDecoder[T]): F[T]
@@ -17,13 +18,13 @@ trait KafkaMessage[F[_]] {
   def underlying: DefaultConsumerRecord
 }
 
-object KafkaMessage {
+object Message {
 
   /**
     * Creates a KafkaMessage from a ConsumerRecord.
     */
   def apply[F[_]](record: DefaultConsumerRecord)
-                 (implicit F: Sync[F]): KafkaMessage[F] = new KafkaMessage[F] {
+                 (implicit F: Sync[F]): Message[F] = new Message[F] {
 
     def keyAs[T](implicit D: KafkaDecoder[T]): F[T] = F.delay(D.decode(record.key()))
 
@@ -38,7 +39,7 @@ object KafkaMessage {
     def underlying: DefaultConsumerRecord = record
   }
 
-  def apply[F[_], T](topic: String, message: T)(implicit F: Sync[F], E: KafkaEncoder[T]): KafkaMessage[F] = {
+  def apply[F[_], T](topic: String, message: T)(implicit F: Sync[F], E: KafkaEncoder[T]): Message[F] = {
     val record = new DefaultConsumerRecord(topic, 0, 0L, Array.empty[Byte], E.encode(message))
     apply[F](record)
   }

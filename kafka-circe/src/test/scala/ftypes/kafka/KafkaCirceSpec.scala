@@ -2,10 +2,10 @@ package ftypes.kafka
 
 import cats.effect.IO
 import ftypes.kafka.circe._
-import ftypes.kafka.producer.KafkaProducer
+import ftypes.kafka.io.SimpleKafkaProducer
 import ftypes.test.logging.PrintLog
-import io.circe.{Decoder, Encoder}
-import io.circe.literal._
+import _root_.io.circe.literal._
+import _root_.io.circe.{Decoder, Encoder}
 import org.apache.kafka.clients.consumer.{MockConsumer, OffsetResetStrategy}
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.common.serialization.ByteArraySerializer
@@ -18,22 +18,22 @@ class KafkaCirceSpec extends FlatSpec with Matchers {
 
   val mockConsumer = new MockConsumer[ByteArray, ByteArray](OffsetResetStrategy.EARLIEST)
   val mockProducer = new MockProducer(true, new ByteArraySerializer, new ByteArraySerializer)
-  val kafka = KafkaProducer[IO](mockProducer)
+  val kafka = SimpleKafkaProducer[IO](mockProducer)
 
-  case class Message(a: String, b: Boolean, c: List[Int])
+  case class TestMessage(a: String, b: Boolean, c: List[Int])
 
   def lastMessage: Option[String] = mockProducer.history().asScala.headOption.map { record =>
     record.value().map(_.toChar).mkString
   }
 
-  implicit val messageEncoder: Encoder[Message] =
+  implicit val messageEncoder: Encoder[TestMessage] =
     Encoder.forProduct3("a", "b", "c")(m => (m.a, m.b, m.c))
-  
-  implicit val messageDecoder: Decoder[Message] =
-    Decoder.forProduct3("a", "b", "c")(Message.apply)
+
+  implicit val messageDecoder: Decoder[TestMessage] =
+    Decoder.forProduct3("a", "b", "c")(TestMessage.apply)
 
   it should "derive the encoder if there is a implicit circe encoder" in {
-    kafka.produce("test" -> Message("foo", b = false, List(1, 2, 3))).unsafeRunSync()
+    kafka.produce("test" -> TestMessage("foo", b = false, List(1, 2, 3))).unsafeRunSync()
     lastMessage shouldBe Some(json"""
       {
         "a": "foo",

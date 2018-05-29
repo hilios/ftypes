@@ -32,28 +32,28 @@ class KafkaConsumerSpec extends FlatSpec with Matchers with Inside with KafkaDsl
 
   behavior of "KafkaService"
 
-  it should "return a Kleisli from a partial function that may return some consumer" in {
+  it should "return a Kleisli from a partial function that may run a KafkaMessage or not" in {
     val msgEn = createRecord("my-topic-en", "Hello, World!")
     val msgPt = createRecord("my-topic-pt", "Olá, Mundo!")
     val msgEs = createRecord("my-topic-es", "¡Hola, Mundo!")
 
-
     val helloKafka: KafkaService[IO] = KafkaService {
-      case record @ Topic("my-topic-en") => IO.suspend(record.as[String])
+      case record @ Topic("my-topic-en") => for {
+        _ <- record.as[String]
+      } yield ()
     }
 
     val olaKafka: KafkaService[IO] = KafkaService {
-      case record @ Topic("my-topic-pt") => IO.suspend(record.as[String])
+      case record @ Topic("my-topic-pt") => for {
+        _ <- record.as[String]
+      } yield ()
     }
 
     val service: KafkaService[IO] = helloKafka <+> olaKafka
 
-    def body(msg: Message[IO]): IO[Option[String]] =
-      service(msg).map(_.asInstanceOf[String]).value
-
-    body(msgEn).unsafeRunSync() shouldBe Some("Hello, World!")
-    body(msgPt).unsafeRunSync() shouldBe Some("Olá, Mundo!")
-    body(msgEs).unsafeRunSync() shouldBe None
+    service.apply(msgEn).value.unsafeRunSync() shouldBe Some(())
+    service.apply(msgPt).value.unsafeRunSync() shouldBe Some(())
+    service.apply(msgEs).value.unsafeRunSync() shouldBe None
   }
 
   ".compile" should "return a KafkaConsumer from a KafkaService" in {

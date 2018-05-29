@@ -6,9 +6,9 @@ import ftypes.kafka.consumer.Return.{Ack, Error}
 
 object KafkaConsumer {
 
-  def apply[F[_]](f: Message[F] => F[Return[F]]): KafkaConsumer[F, F] = Kleisli(f)
+  def apply[F[_]](f: Message[F] => F[Return[F]]): KafkaConsumer[F] = Kleisli(f)
 
-  def lift[F[_]](pf: PartialFunction[Message[F], F[Unit]])(implicit F: Sync[F]): KafkaConsumer[F, F] = {
+  def lift[F[_]](pf: PartialFunction[Message[F], F[Unit]])(implicit F: Sync[F]): KafkaConsumer[F] = {
     Kleisli(message => {
       lazy val error: Return[F] = Error(message, new RuntimeException(s"Consumer for topic ${message.topic} was not found"))
 
@@ -24,7 +24,7 @@ object KafkaConsumer {
     })
   }
 
-  def of[F[_]](service: KafkaService[F])(implicit F: Sync[F]): KafkaConsumer[F, F] = Kleisli(message => {
+  def of[F[_]](service: KafkaService[F])(implicit F: Sync[F]): KafkaConsumer[F] = Kleisli(message => {
     lazy val error: Return[F] = Error(message, new RuntimeException(s"Consumer for topic ${message.topic} was not found"))
 
     F.recover(service(message).map(_ => Ack(message)).getOrElse(error)) {

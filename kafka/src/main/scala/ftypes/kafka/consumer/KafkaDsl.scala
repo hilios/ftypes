@@ -9,7 +9,7 @@ trait KafkaDsl {
   }
 
   implicit class KafkaServiceOps[F[_]](service: KafkaService[F])(implicit F: Sync[F]) {
-    def compile: KafkaConsumer[F, F] = KafkaConsumer.of(service)
+    def compile: KafkaConsumer[F] = KafkaConsumer.of(service)
   }
 }
 

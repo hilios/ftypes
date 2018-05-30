@@ -3,43 +3,20 @@ package ftypes
 import cats.effect.{IO, Sync}
 import cats.implicits._
 import ftypes.LoggingSpec.TestLogging
-import org.scalatest._
+import org.scalatest.{FlatSpec, Matchers}
 
 class LoggingSpec extends FlatSpec with Matchers {
-  ".getLogger" should "materialize a sl4j logger instance for the caller class" in {
-    val logger = Logging.getLogger
-    logger.getName shouldBe "ftypes.LoggingSpec"
-  }
-
   it should "implicitly resolved in the context by the effect class" in {
     val t = new TestLogging[IO]
     t.prog.unsafeRunSync()
-  }
-
-  "#get" should "return a logging instance with the slf4j logger for the caller class" in {
-    val t = new TestLogging[IO]
-    t.log.logger.getName shouldBe "ftypes.LoggingSpec.TestLogging"
-  }
-
-  "#withName(name)" should "return a logging instance with the slf4j logger for the caller class" in {
-    val t = new TestLogging[IO]
-    t.logN.logger.getName shouldBe "Bar"
-  }
-
-  "#forClass[T]" should "return a logging instance with the slf4j logger for the caller class" in {
-    val t = new TestLogging[IO]
-    t.logT.logger.getName shouldBe "ftypes.LoggingSpec$Foo"
+    t.logger.getName shouldBe "ftypes.LoggingSpec.TestLogging"
   }
 }
 
 object LoggingSpec {
-  case class Foo()
-
   class TestLogging[F[_]](implicit F: Sync[F], L: Logging[F]) {
 
-    val log = L.get
-    val logT = L.forClass[Foo]
-    val logN = L.withName("Bar")
+    val logger = L.logger
 
     def prog: F[Unit] = for {
       _ <- L.trace("Go ahead and leave me...")
@@ -50,3 +27,4 @@ object LoggingSpec {
     } yield ()
   }
 }
+

@@ -1,8 +1,7 @@
 package ftypes.test.logging
 
 import cats.effect.Effect
-import ftypes.Logging
-import ftypes.LoggingMacros
+import ftypes.{Logger, Logging, LoggingMacros}
 
 case class PrintLog[F[_]](level: LogLevel)(implicit F: Effect[F]) extends Logging[F] {
 
@@ -18,27 +17,25 @@ case class PrintLog[F[_]](level: LogLevel)(implicit F: Effect[F]) extends Loggin
     }
   }
 
-  override def get: Logging[F] = macro LoggingMacros.selfMaterializer[F]
-
-  override def trace(message: => String): F[Unit] =
+  override def trace(message: => String)(implicit logger: Logger): F[Unit] =
     render(Trace, message)
-  override def trace(message: => String, ex: Throwable): F[Unit] =
+  override def trace(message: => String, ex: Throwable)(implicit logger: Logger): F[Unit] =
     render(Trace, message, ex)
-  override def debug(message: => String): F[Unit] =
+  override def debug(message: => String)(implicit logger: Logger): F[Unit] =
     render(Debug, message)
-  override def debug(message: => String, ex: Throwable): F[Unit] =
+  override def debug(message: => String, ex: Throwable)(implicit logger: Logger): F[Unit] =
     render(Debug, message, ex)
-  override def info(message: => String): F[Unit] =
+  override def info(message: => String)(implicit logger: Logger): F[Unit] =
     render(Info, message)
-  override def info(message: => String, ex: Throwable): F[Unit] =
+  override def info(message: => String, ex: Throwable)(implicit logger: Logger): F[Unit] =
     render(Info, message, ex)
-  override def warn(message: => String): F[Unit] =
+  override def warn(message: => String)(implicit logger: Logger): F[Unit] =
     render(Warn, message)
-  override def warn(message: => String, ex: Throwable): F[Unit] =
+  override def warn(message: => String, ex: Throwable)(implicit logger: Logger): F[Unit] =
     render(Warn, message, ex)
-  override def error(message: => String): F[Unit] =
+  override def error(message: => String)(implicit logger: Logger): F[Unit] =
     render(Error, message)
-  override def error(message: => String, ex: Throwable): F[Unit] =
+  override def error(message: => String, ex: Throwable)(implicit logger: Logger): F[Unit] =
     render(Error, message, ex)
 }
 

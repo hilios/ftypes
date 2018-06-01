@@ -1,7 +1,7 @@
-package ftypes.test.logging
+package ftypes.log.utils
 
 import cats.effect.Effect
-import ftypes.{Logger, Logging, LoggingMacros}
+import ftypes.log.{Logger, Logging}
 
 case class PrintLog[F[_]](level: LogLevel)(implicit F: Effect[F]) extends Logging[F] {
 

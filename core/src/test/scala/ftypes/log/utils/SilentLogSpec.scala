@@ -1,22 +1,23 @@
-package ftypes
+package ftypes.log.utils
 
 import cats.effect.{IO, Sync}
-import cats.implicits._
-import ftypes.LoggingSpec.TestLogging
+import ftypes.log.Logging
+import ftypes.log.utils.SilentLogSpec.TestLogging
 import org.scalatest.{FlatSpec, Matchers}
 
-class LoggingSpec extends FlatSpec with Matchers {
-  it should "implicitly resolved in the context by the effect class" in {
-    val t = new TestLogging[IO]
-    t.prog.unsafeRunSync()
-    t.logger.getName shouldBe "ftypes.LoggingSpec.TestLogging"
+class SilentLogSpec extends FlatSpec with Matchers {
+  it should "accumulate all logs in a internal list" in {
+    implicit val log = SilentLog[IO]
+
+    val t = TestLogging[IO]
+    
   }
 }
 
-object LoggingSpec {
+object SilentLogSpec {
   class TestLogging[F[_]](implicit F: Sync[F], L: Logging[F]) {
 
-    val logger = L.logger
+    val logger = L
 
     def prog: F[Unit] = for {
       _ <- L.trace("Go ahead and leave me...")
@@ -27,4 +28,3 @@ object LoggingSpec {
     } yield ()
   }
 }
-

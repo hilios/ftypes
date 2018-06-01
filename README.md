@@ -51,7 +51,7 @@ libraryDependencies += "com.github.hilios" %% "ftypes-kafka-circe" % "0.1.0-SNAP
 
 ## Logging
 
-Lift the SLF4J Logger instance into a `Effect` allowing the monadic composition.
+Lift a SLF4J Logger instance into a `Effect` suspending side effects and allowing monadic composition.
 
 ```scala
 import cats.effect.Effect
@@ -75,84 +75,29 @@ case class UserService[F[_]](httpClient: Client[F])(implicit F: Effect[F], L: Lo
 }
 ```
 
-## Component
+## Kafka
 
-Inspired by [Stuart Sierra clojure library](https://github.com/stuartsierra/component) this is utility for:
+Basic type classes for creating Kafka consumers and producers.
 
-> [...] managing the lifecycle and dependencies of software components which have runtime state.
->
-> This is primarily a design pattern with a few helper functions. It can be seen as a style of
-> dependency injection using immutable data structures.
+### Consumer
 
-Providing a simple trait with a `start` and `stop` that can be mixed in into any effectful type class:
+Provides a dsl *á la* [http4s](https://http4s.org/) to create a topic consumers. Where the consumer is just a function `Record[F] => Return[F]` lifted on a effect, therefore, can be described as a `Kleisli[F, Record[F], Return[F]]`.
 
-```scala
-import ftype.Logging
-
-case class Kafka[F[_]]()(implicit F: Effect[F]) with Component[F] {
-  val producer: Producer[ByteArray, ByteArray] = ...
-
-  def start: F[Unit] = F.pure(()) // Do nothing
-
-  def stop: F[Unit] = F.delay(producer.close())
-}
-```
-
-And later can be managed in the correct order:
+Declare your consumers as a partial function with pattern matching for the topics:
 
 ```scala
-Component.stop(kafka, httpClient, db, ...)
-```
+import ftypes.kafka.consumer._
 
-This structure plays super nice with `fs2` and `http4s`:
+object Service extends KafkaDsl {
+  def consumers = KafkaConsumer {
+    case msg @ Topic("tweets") => form {
+      m <- msg.as[String]
+    } yield ()
 
-```scala
-import cats.effect.{Effect, IO}
-import cats.implicits._
-import doobie.util.transactor.Transactor
-import ftype.Component
-import org.http4s.client.Client
-import pureconfig._
-import pureconfig.module.catseffect._
-
-// Create the components module
-final case class Components[F[_]](config: Config, kamon: Kamon[F], httpClient: Client[F], kafka: Kafka[F], db: Transactor[F])
-                                 (implicit F: Effect[F], L: Logging[F]) with Component[F] {
-
-  def start: F[Unit] = for {
-    _ <- L.info("Starting dependencies")
-    _ <- Component.start(kafka, kamon)
-  } yield ()
-
-  def stop: F[Unit] = for {
-    _ <- L.info("Stoping dependencies")
-    _ <- httpClient.shutdown
-    _ <- Component.stop(kafka, kamon)
-  } yield ()
-}
-
-object Main extends StreamApp[IO] {
-  override def stream(args: List[String], requestShutdown: IO[Unit]): Stream[IO, ExitCode] = for {
-      // Start the dependencies
-      config     <- Stream.eval { Config[IO] }
-      http       <- Http1Client.stream[IO]()
-      kafka      <- Stream.eval { Kafka[IO](config) }
-      db         <- Stream.eval { Transactor.fromDriverManager[IO]("org.postgresql.Driver", "jdbc:postgresql:world",
-       "postgres", "") }
-
-      // Create the components "singleton"
-      components <- Stream.eval { Components[IO](config, http, kafka) }
-      _          <- Stream.eval { components.start }
-
-      // Hook up everything together with the components
-      // ...
-
-      exitCode   <- BlazeBuilder[IO]
-        .bindHttp("0.0.0.0", 9000)
-        .mountService(endpoints)
-        .serve
-        .onFinalize(components.stop) // <-- Stop the components
-  } yield exitCode
+    case msg @ Topic("facebook") => form {
+      m <- msg.as[String]
+    } yield ()
+  }
 }
 ```
 

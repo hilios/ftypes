@@ -1,4 +1,4 @@
-package ftypes
+package ftypes.log
 
 import org.slf4j
 

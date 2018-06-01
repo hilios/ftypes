@@ -1,6 +1,6 @@
 
 lazy val ftypes = (project in file(".")).
-  aggregate(core, `test-utils`, kafka, `kafka-circe`)
+  aggregate(core, kafka, `kafka-circe`)
   .settings(
     aggregate in update := false
   )
@@ -16,27 +16,19 @@ lazy val core = (project in file("core"))
     )
   )
 
-lazy val `test-utils` = (project in file("test-utils"))
-  .settings(moduleName := "ftypes-test-utils")
+lazy val kafka = (project in file("kafka"))
+  .settings(moduleName := "ftypes-kafka")
   .dependsOn(core % "test->test;compile->compile")
   .settings(
     inThisBuild(commonSettings),
-    libraryDependencies ++= Seq()
-  )
-
-lazy val kafka = (project in file("kafka"))
-  .settings(moduleName := "ftypes-kafka")
-  .dependsOn(core % "test->test;compile->compile", `test-utils` % "test->test")
-  .settings(
-    inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "org.apache.kafka"   % "kafka-clients" % "1.1.0",
+      "org.apache.kafka"   % "kafka-clients" % "1.1.0" % Provided,
     )
   )
 
 lazy val `kafka-circe` = (project in file("kafka-circe"))
   .settings(moduleName := "ftypes-kafka-circe")
-  .dependsOn(kafka % "test->test;compile->compile", `test-utils` % "test->test")
+  .dependsOn(kafka % "test->test;compile->compile")
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(

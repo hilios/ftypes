@@ -1,8 +1,8 @@
-package ftypes.test.logging
+package ftypes.log.utils
 
 import cats.effect.Sync
-import ftypes.{Logger, Logging, LoggingMacros}
-import ftypes.test.logging.SilentLog.LogMessage
+import ftypes.log.utils.SilentLog.LogMessage
+import ftypes.log.{Logger, Logging}
 
 import scala.collection.mutable
 
@@ -16,6 +16,8 @@ case class SilentLog[F[_]]()(implicit F: Sync[F]) extends Logging[F] {
   }
 
   def messages: List[LogMessage] = logs.toList.reverse
+  
+  def clear: Unit = logs.clear()
 
   override def trace(message: => String)(implicit logger: Logger): F[Unit] =
     accumulate(Trace, message, None)

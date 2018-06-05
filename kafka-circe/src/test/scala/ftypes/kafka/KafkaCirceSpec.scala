@@ -1,11 +1,11 @@
 package ftypes.kafka
 
 import cats.effect.IO
-import ftypes.kafka.circe._
-import ftypes.kafka.io.SimpleKafkaProducer
-import ftypes.test.logging.PrintLog
 import _root_.io.circe.literal._
 import _root_.io.circe.{Decoder, Encoder}
+import ftypes.kafka.io.SimpleKafkaProducer
+import ftypes.log.utils.PrintLog
+import ftypes.kafka.circe._
 import org.apache.kafka.clients.consumer.{MockConsumer, OffsetResetStrategy}
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.common.serialization.ByteArraySerializer

@@ -32,9 +32,10 @@ lazy val `kafka-circe` = (project in file("kafka-circe"))
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "io.circe"           %% "circe-core"       % "0.9.3"   % Provided,
-      "io.circe"           %% "circe-parser"     % "0.9.3"   % Provided,
-      "io.circe"           %% "circe-literal"    % "0.9.3"   % Test
+      "io.circe"           %% "circe-core"       % "0.9.3" % Provided,
+      "io.circe"           %% "circe-parser"     % "0.9.3" % Provided,
+      "io.circe"           %% "circe-literal"    % "0.9.3" % Test,
+      "org.apache.kafka"    % "kafka-clients"    % "1.1.0" % Test
     )
   )
 

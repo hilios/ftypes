@@ -1,4 +1,4 @@
-package ftypes.kafka.consumer
+package ftypes.kafka
 
 sealed trait Return[F[_]] {
   def message: Record[F]

@@ -1,10 +1,8 @@
-package ftypes.kafka.producer
+package ftypes.kafka
 
 import ftypes.kafka.serializers.KafkaEncoder
-import ftypes.kafka.{DefaultProducerRecord, SingleMessage}
 
-
-trait KafkaProducer[F[_]] {
+trait Producer[F[_]] {
   def produce[V](topicAndMessage: SingleMessage[V])(implicit v: KafkaEncoder[V]): F[Unit] = {
     val (topic, message) = topicAndMessage
     produce(topic, message)

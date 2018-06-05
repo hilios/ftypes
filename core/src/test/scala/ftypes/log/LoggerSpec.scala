@@ -1,5 +1,6 @@
 package ftypes.log
 
+import ftypes.log.LoggerSpec.Foo
 import org.scalatest._
 
 class LoggerSpec extends FlatSpec with Matchers {

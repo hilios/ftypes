@@ -8,7 +8,7 @@ import cats.implicits._
 import ftypes.kafka
 import ftypes.kafka.Return.{Ack, Error, NotFound}
 import ftypes.kafka._
-import org.apache.kafka.clients.consumer.{OffsetAndMetadata, Consumer => KafkaConsumer}
+import org.apache.kafka.clients.consumer.{MockConsumer, OffsetAndMetadata, OffsetResetStrategy, Consumer => KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.JavaConverters._
@@ -64,5 +64,8 @@ case class SimpleKafkaConsumer[F[_]](topics: Seq[String], consumer: KafkaConsume
   } yield ()
 
   def stop: F[Unit] = F.delay(run.set(false))
+}
 
+object SimpleKafkaConsumer {
+  def mock = new MockConsumer[ByteArray, ByteArray](OffsetResetStrategy.EARLIEST)
 }

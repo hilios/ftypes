@@ -9,7 +9,7 @@ trait SerializerImplicits {
   implicit val floatKafkaEncoder: KafkaEncoder[Float] = (value: Float) => ByteBuffer.allocate(4).putFloat(value).array()
   implicit val floatKafkaDecoder: KafkaDecoder[Float] = (value: Array[Byte]) => ByteBuffer.wrap(value).getFloat
 
-  implicit val doubleKafkaEncoder: KafkaEncoder[Double] = (value: Double) => ByteBuffer.allocate(4).putDouble(value).array()
+  implicit val doubleKafkaEncoder: KafkaEncoder[Double] = (value: Double) => ByteBuffer.allocate(8).putDouble(value).array()
   implicit val doubleKafkaDecoder: KafkaDecoder[Double] = (value: Array[Byte]) => ByteBuffer.wrap(value).getDouble
 
   implicit val intKafkaEncoder: KafkaEncoder[Int] = (value: Int) => ByteBuffer.allocate(4).putInt(value).array()

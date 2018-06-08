@@ -1,0 +1,28 @@
+version: "3.1"
+services:
+  zk:
+    image: zookeeper
+    hostname: zk
+    ports:
+      - 2181:2181
+    environment:
+      - ZOO_MY_ID=1
+      - ZOO_SERVERS=server.1:zk:2888:3888
+
+  kafka:
+    image: hilios/kafka:0.11.0.2
+    ports:
+      - 9092:9092
+    depends_on:
+      - zk
+    links:
+      - zk
+    command:
+      - --override
+      - broker.id=0
+      - --override
+      - advertised.listeners=PLAINTEXT://kafka:9092
+      - --override
+      - zookeeper.connect=zk:2181
+      - --override
+      - offsets.topic.replication.factor=1

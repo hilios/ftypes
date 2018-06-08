@@ -6,6 +6,8 @@ import cats.effect.IO
 import ftypes.kafka.circe._
 import ftypes.kafka.io.SimpleKafkaProducer
 import ftypes.log.utils.PrintLog
+import org.apache.kafka.clients.producer.MockProducer
+import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.scalatest._
 
 import scala.collection.JavaConverters._
@@ -13,7 +15,7 @@ import scala.collection.JavaConverters._
 class KafkaCirceSpec extends FlatSpec with Matchers {
   implicit val logger = PrintLog[IO]
 
-  val mockProducer = SimpleKafkaProducer.mock
+  val mockProducer = new MockProducer(true, new ByteArraySerializer, new ByteArraySerializer)
   val kafka = SimpleKafkaProducer[IO](mockProducer)
 
   case class TestMessage(a: String, b: Boolean, c: List[Int])

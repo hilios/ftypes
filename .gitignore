@@ -15,3 +15,5 @@ project/plugins/project/
 
 # IntelliJ
 .idea/
+
+.ensime

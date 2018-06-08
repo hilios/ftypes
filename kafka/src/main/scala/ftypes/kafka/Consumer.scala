@@ -1,9 +1,9 @@
 package ftypes.kafka
 
+import ftypes.kafka
+
 trait Consumer[F[_]] {
-  def mountConsumer(consumer: KafkaConsumer[F]): F[Unit]
-
-  def start: F[Unit]
-
+  def mountConsumer(consumerDefinition: kafka.KafkaConsumer[F]): F[Unit]
+  
   def stop: F[Unit]
 }

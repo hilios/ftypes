@@ -45,9 +45,9 @@ lazy val commonSettings = Seq(
   scalaOrganization := "org.typelevel",
   scalaVersion := "2.12.4-bin-typelevel-4",
   libraryDependencies ++= Seq(
-    "org.scalatest"      %% "scalatest"        % "3.0.5"    % Test,
-    "org.typelevel"      %% "cats-core"        % "1.1.0"    % Provided,
-    "org.typelevel"      %% "cats-effect"      % "1.0.0-RC" % Provided,
+    "org.scalatest"      %% "scalatest"        % "3.0.5"     % Test,
+    "org.typelevel"      %% "cats-core"        % "1.1.0"     % Provided,
+    "org.typelevel"      %% "cats-effect"      % "1.0.0-RC2" % Provided,
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
   ),
   autoCompilerPlugins := true,

@@ -46,7 +46,7 @@ class KafkaConsumerSpec extends FlatSpec with Matchers with Inside with KafkaDsl
 
     def body(msg: Record[IO]): IO[String] = for {
       ret  <- helloKafka(msg)
-      body <- ret.message.as[String]
+      body <- ret.record.as[String]
     } yield body
 
     body(msgA).unsafeRunSync() shouldBe "Hello, World!"

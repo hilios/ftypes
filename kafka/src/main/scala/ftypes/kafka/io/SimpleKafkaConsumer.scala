@@ -9,10 +9,9 @@ import ftypes.kafka
 import ftypes.kafka.Return.{Ack, Error, NotFound}
 import ftypes.kafka._
 import ftypes.log.{Logger, Logging}
-import org.apache.kafka.clients.consumer.{OffsetAndMetadata, Consumer => KafkaConsumer}
+import org.apache.kafka.clients.consumer.{ConsumerRebalanceListener, OffsetAndMetadata, Consumer => KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 
-import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
 case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArray], topics: String*)
@@ -41,29 +40,25 @@ case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArra
     result <- fn.apply(msg)
   } yield result
 
-  @tailrec private def pooling(fn: kafka.KafkaService[F]): F[Unit] = {
-    val records = consumer.poll(100).asScala.toList
-    val exec = for {
-      _ <- {
-        val offsets = records.map(r => s"${r.topic()}(${r.offset()})").mkString(", ")
-        if (records.nonEmpty) L.debug(s"Consuming records $offsets")
-        else F.pure(())
-      }
-      ret <- records.traverse(consume(fn, _))
-      rec <- F.pure {
-        ret.filter {
-          case Ack(_)      => true
-          case Error(_, _) => true
-          case NotFound(_) => false
-        }.map(_.record.underlying)
-      }
-      _ <- commit(rec)
-    } yield ()
-    // Execute the consumer
-    F.toIO(exec).unsafeToFuture()
-
-    if (run.get()) F.pure(())
-    else pooling(fn)
+  private def pooling(fn: kafka.KafkaService[F]): F[Unit] = F.flatMap(for {
+    records <- consumer.poll(1).asScala.toList.pure[F]
+    _       <- {
+      val offsets = records.map(r => s"${r.topic()}(${r.offset()})").mkString(", ")
+      if (records.nonEmpty) L.debug(s"Consuming records $offsets")
+      else F.pure(())
+    }
+    ret <- records.traverse(consume(fn, _))
+    rec <- F.pure {
+      ret.filter {
+        case Ack(_)      => true
+        case Error(_, _) => true
+        case NotFound(_) => false
+      }.map(_.record.underlying)
+    }
+    _ <- commit(rec)
+  } yield ()) { _ =>
+    if (run.get()) pooling(fn)
+    else L.debug(s"Exiting inner consumer loop")
   }
 
   def mountConsumer(consumerDefinition: kafka.KafkaConsumer[F]): F[Unit] = for {
@@ -71,11 +66,19 @@ case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArra
     fn <- kafka.seal(consumerDefinition).pure[F]
     _  <- F.delay {
       consumer.subscribe(util.Arrays.asList(topics: _*))
-      run.set(true)
     }
-    f <- F.start(pooling(fn))
-    _ <- f.join
+    _  <- start(fn)
   } yield ()
 
-  def stop: F[Unit] = F.delay(run.set(false)) *> F.delay(consumer.close())
+  def start(fn: kafka.KafkaService[F]): F[Unit] = for {
+    _     <- F.delay(run.set(true))
+    fiber <- F.start(pooling(fn))
+    _     <- fiber.join
+  } yield ()
+
+  def stop: F[Unit] = for {
+    _ <- L.info("Stopping consumer")
+    _ <- F.delay(run.set(false))
+    _ <- F.delay(consumer.close())
+  } yield ()
 }

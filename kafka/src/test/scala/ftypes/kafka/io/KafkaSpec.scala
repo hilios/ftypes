@@ -34,7 +34,9 @@ class KafkaSpec extends FlatSpec with Matchers with SerializerImplicits with Bef
   val kafka = KafkaMock[IO](topic)
 
   override def beforeAll(): Unit = {
-    kafka.mountConsumer(fn).unsafeToFuture()
+    kafka.mountConsumer(fn).unsafeToFuture() recover {
+      case ex: Throwable => println(ex)
+    }
     super.beforeAll()
   }
 
@@ -44,7 +46,11 @@ class KafkaSpec extends FlatSpec with Matchers with SerializerImplicits with Bef
   }
 
   it should "produce and consume a message" in {
-    kafka.produce(topic, "Hello, World!").unsafeRunSync()
+    val test = for {
+      _ <- kafka.produce(topic, "Hello, World!")
+      _ <- IO(Thread.sleep(150))
+    } yield ()
+    test.unsafeRunSync()
     lastMessage.get() shouldBe "Hello, World!"
   }
 }

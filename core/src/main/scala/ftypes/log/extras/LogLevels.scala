@@ -1,4 +1,4 @@
-package ftypes.log.utils
+package ftypes.log.extras
 
 trait LogLevels { self =>
   sealed abstract class LogLevel(val weight: Int, val color: String) {

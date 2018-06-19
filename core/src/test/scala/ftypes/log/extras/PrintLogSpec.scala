@@ -1,4 +1,4 @@
-package ftypes.log.utils
+package ftypes.log.extras
 
 import org.scalatest.{FlatSpec, Matchers}
 

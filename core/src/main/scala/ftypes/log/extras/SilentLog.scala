@@ -1,7 +1,7 @@
-package ftypes.log.utils
+package ftypes.log.extras
 
 import cats.effect.Sync
-import ftypes.log.utils.SilentLog.LogMessage
+import ftypes.log.extras.SilentLog.LogMessage
 import ftypes.log.{Logger, Logging}
 
 import scala.collection.mutable

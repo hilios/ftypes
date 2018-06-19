@@ -1,10 +1,10 @@
-package ftypes.log.utils
+package ftypes.log.extras
 
 import cats.effect.{IO, Sync}
 import cats.implicits._
 import ftypes.log.{Logger, Logging}
-import ftypes.log.utils.SilentLog.LogMessage
-import ftypes.log.utils.SilentLogSpec.TestLogger
+import ftypes.log.extras.SilentLog.LogMessage
+import ftypes.log.extras.SilentLogSpec.TestLogger
 import org.scalatest.{FlatSpec, Matchers}
 
 class SilentLogSpec extends FlatSpec with Matchers {
@@ -14,6 +14,7 @@ class SilentLogSpec extends FlatSpec with Matchers {
     implicit val log = SilentLog[IO]
 
     new TestLogger[IO].prog.unsafeRunSync()
+    
     log.messages should contain allOf (
       LogMessage(Trace, "Go ahead and leave me...", None),
       LogMessage(Debug, "I think I'd prefer to stay inside...", None),
@@ -26,11 +27,6 @@ class SilentLogSpec extends FlatSpec with Matchers {
 
 object SilentLogSpec {
   class TestLogger[F[_]](implicit F: Sync[F], L: Logging[F]) {
-
-    val logger = L
-
-    implicit val l = Logger.withName("test")
-
     def prog: F[Unit] = for {
       _ <- L.trace("Go ahead and leave me...")
       _ <- L.debug("I think I'd prefer to stay inside...")

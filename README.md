@@ -75,13 +75,54 @@ case class UserService[F[_]](httpClient: Client[F])(implicit F: Effect[F], L: Lo
 }
 ```
 
+### Extras
+
+The `ftypes.logs.extras` package offers two implementations that not rely on the SLF4J, thus making a better choice for
+testing environment – like unit or integration tests.
+
+#### `SilentLog[F]`
+
+Suppress all log messages from being outputed by the standard output collecting all log messages that can be inspected
+later allowing to test the logs side-effects.
+
+```scala
+import cats.effect.IO
+import ftypes.log.Logging
+import ftypes.log.extras.SilentLog.LogMessage
+
+def test(implicit L: Logger[IO]): IO[Unit] = for {
+  _ <- L.trace("Go ahead and leave me...")
+  _ <- L.debug("I think I'd prefer to stay inside...")
+  _ <- L.warn("Maybe you'll find someone else to help you.")
+  _ <- L.info("Maybe Black Mesa?")
+  _ <- L.error("That was a joke. Ha Ha. Fat Chance!")
+} yield ()
+
+implicit val log = SilentLog[IO]
+
+test.unsafeRunSync()
+
+log.messages should contain allOf (
+  LogMessage(Trace, "Go ahead and leave me...", None),
+  LogMessage(Debug, "I think I'd prefer to stay inside...", None),
+  LogMessage(Warn, "Maybe you'll find someone else to help you.", None),
+  LogMessage(Info, "Maybe Black Mesa?", None),
+  LogMessage(Error, "That was a joke. Ha Ha. Fat Chance!", None)
+)
+
+```
+
+#### `PrintLog[F]`
+
+Provide a pretty print log implementation that will make your log output look beautiful.
+
 ## Kafka
 
 Basic type classes for creating Kafka consumers and producers.
 
 ### Consumer
 
-Provides a dsl *á la* [http4s](https://http4s.org/) to create a topic consumers. Where the consumer is just a function `Record[F] => Return[F]` lifted on a effect, therefore, can be described as a `Kleisli[F, Record[F], Return[F]]`.
+Provides a DSL similar to [http4s](https://http4s.org/) to create a topic consumers. Where the consumer is just a function `Record[F] => Return[F]` lifted on a effect, therefore, can be described as a `Kleisli[F, Record[F], Return[F]]`.
 
 Declare your consumers as a partial function with pattern matching for the topics:
 
@@ -90,11 +131,11 @@ import ftypes.kafka.consumer._
 
 object Service extends KafkaDsl {
   def consumers = KafkaConsumer {
-    case msg @ Topic("tweets") => form {
+    case msg @ Topic("tweets") => for {
       m <- msg.as[String]
     } yield ()
 
-    case msg @ Topic("facebook") => form {
+    case msg @ Topic("facebook") => for {
       m <- msg.as[String]
     } yield ()
   }

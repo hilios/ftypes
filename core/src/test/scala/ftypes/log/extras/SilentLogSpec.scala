@@ -1,19 +1,24 @@
 package ftypes.log.extras
 
-import cats.effect.{IO, Sync}
-import cats.implicits._
+import cats.effect.IO
 import ftypes.log.{Logger, Logging}
 import ftypes.log.extras.SilentLog.LogMessage
-import ftypes.log.extras.SilentLogSpec.TestLogger
 import org.scalatest.{FlatSpec, Matchers}
 
 class SilentLogSpec extends FlatSpec with Matchers {
 
-  it should "accumulate all logs in a internal list" in {
+  def test(implicit L: Logging[IO]): IO[Unit] = for {
+    _ <- L.trace("Go ahead and leave me...")
+    _ <- L.debug("I think I'd prefer to stay inside...")
+    _ <- L.warn("Maybe you'll find someone else to help you.")
+    _ <- L.info("Maybe Black Mesa?")
+    _ <- L.error("That was a joke. Ha Ha. Fat Chance!")
+  } yield ()
 
+  "#messages" should "accumulate all log messages" in {
     implicit val log = SilentLog[IO]
 
-    new TestLogger[IO].prog.unsafeRunSync()
+    test.unsafeRunSync()
     
     log.messages should contain allOf (
       LogMessage(Trace, "Go ahead and leave me...", None),
@@ -23,16 +28,14 @@ class SilentLogSpec extends FlatSpec with Matchers {
       LogMessage(Error, "That was a joke. Ha Ha. Fat Chance!", None)
     )
   }
-}
 
-object SilentLogSpec {
-  class TestLogger[F[_]](implicit F: Sync[F], L: Logging[F]) {
-    def prog: F[Unit] = for {
-      _ <- L.trace("Go ahead and leave me...")
-      _ <- L.debug("I think I'd prefer to stay inside...")
-      _ <- L.warn("Maybe you'll find someone else to help you.")
-      _ <- L.info("Maybe Black Mesa?")
-      _ <- L.error("That was a joke. Ha Ha. Fat Chance!")
-    } yield ()
+  "#clear" should "remove all log messages" in {
+    implicit val log = SilentLog[IO]
+
+    test.unsafeRunSync()
+    
+    log.clear
+    log.messages shouldBe empty
   }
 }
+

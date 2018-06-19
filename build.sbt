@@ -1,6 +1,6 @@
 
 lazy val ftypes = (project in file(".")).
-  aggregate(core, kafka, `kafka-circe`)
+  aggregate(core, kafka, `kafka-circe`, kamon)
   .settings(
     aggregate in update := false
   )
@@ -39,11 +39,20 @@ lazy val `kafka-circe` = (project in file("kafka-circe"))
     )
   )
 
+lazy val kamon = (project in file("kamon"))
+  .settings(moduleName := "ftypes-kamon")
+  .dependsOn(core % "test->test;compile->compile")
+  .settings(
+    inThisBuild(commonSettings),
+    libraryDependencies ++= Seq(
+      "io.kamon" %% "kamon-core" % "1.1.2"
+    )
+  )
+
 lazy val commonSettings = Seq(
   organization := "com.github.hilios",
   version := "0.1.0-SNAPSHOT",
-  scalaOrganization := "org.typelevel",
-  scalaVersion := "2.12.4-bin-typelevel-4",
+  crossScalaVersions := Seq("2.11.12", "2.12.6"),
   libraryDependencies ++= Seq(
     "org.scalatest"      %% "scalatest"        % "3.0.5"     % Test,
     "org.typelevel"      %% "cats-core"        % "1.1.0"     % Provided,
@@ -84,7 +93,6 @@ lazy val commonSettings = Seq(
     "-Xlint:type-parameter-shadow",
     "-Xlint:unsound-match",
     "-Xlog-free-terms",
-    "-Yinduction-heuristics",
     "-Yno-adapted-args",
     "-Ypartial-unification",
     "-Ywarn-dead-code",

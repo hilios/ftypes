@@ -37,7 +37,7 @@ by the user:
 scalacOptions += "-Ypartial-unification"
 
 libraryDependencies += "org.typelevel"     %% "cats-core"   % "1.1.0"
-libraryDependencies += "org.typelevel"     %% "cats-effect" % "1.0.0-RC"
+libraryDependencies += "org.typelevel"     %% "cats-effect" % "0.10.1"
 libraryDependencies += "com.github.hilios" %% "ftypes-core" % "0.1.0-SNAPSHOT"
 ```
 

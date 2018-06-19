@@ -34,7 +34,7 @@ class SilentLogSpec extends FlatSpec with Matchers {
 
     test.unsafeRunSync()
     
-    log.clear
+    log.clear()
     log.messages shouldBe empty
   }
 }

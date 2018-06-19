@@ -54,9 +54,9 @@ lazy val commonSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   crossScalaVersions := Seq("2.11.12", "2.12.6"),
   libraryDependencies ++= Seq(
-    "org.scalatest"      %% "scalatest"        % "3.0.5"     % Test,
-    "org.typelevel"      %% "cats-core"        % "1.1.0"     % Provided,
-    "org.typelevel"      %% "cats-effect"      % "1.0.0-RC2" % Provided,
+    "org.scalatest"      %% "scalatest"        % "3.0.5"  % Test,
+    "org.typelevel"      %% "cats-core"        % "1.1.0"  % Provided,
+    "org.typelevel"      %% "cats-effect"      % "0.10.1" % Provided,
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
   ),
   autoCompilerPlugins := true,

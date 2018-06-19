@@ -17,7 +17,7 @@ case class SilentLog[F[_]]()(implicit F: Sync[F]) extends Logging[F] {
 
   def messages: List[LogMessage] = logs.toList.reverse
   
-  def clear: Unit = logs.clear()
+  def clear(): Unit = logs.clear()
 
   override def trace(message: => String)(implicit logger: Logger): F[Unit] =
     accumulate(Trace, message, None)

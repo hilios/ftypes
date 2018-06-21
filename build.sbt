@@ -45,7 +45,8 @@ lazy val kamon = (project in file("kamon"))
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "io.kamon" %% "kamon-core" % "1.1.2"
+      "io.kamon" %% "kamon-core"    % "1.1.2",
+      "io.kamon" %% "kamon-testkit" % "1.1.1" % Test
     )
   )
 
@@ -68,6 +69,7 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-explaintypes",
     "-feature",
+    "-language:reflectiveCalls",
     "-language:existentials",
     "-language:experimental.macros",
     "-language:higherKinds",

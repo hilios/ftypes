@@ -77,8 +77,8 @@ case class UserService[F[_]](httpClient: Client[F])(implicit F: Effect[F], L: Lo
 
 ### Extras
 
-The `ftypes.logs.extras` package offers two implementations that not rely on the SLF4J, thus making a better choice for
-testing environment – like unit or integration tests.
+The `ftypes.log` package offers two implementations that not rely on the SLF4J thus making a better choice for
+testing environments – like unit or integration tests.
 
 #### `SilentLog[F]`
 
@@ -87,8 +87,7 @@ later allowing to test the logs side-effects.
 
 ```scala
 import cats.effect.IO
-import ftypes.log.Logging
-import ftypes.log.extras.SilentLog.LogMessage
+import ftypes.log._
 
 def test(implicit L: Logger[IO]): IO[Unit] = for {
   _ <- L.trace("Go ahead and leave me...")
@@ -103,11 +102,11 @@ implicit val log = SilentLog[IO]
 test.unsafeRunSync()
 
 log.messages should contain allOf (
-  LogMessage(Trace, "Go ahead and leave me...", None),
-  LogMessage(Debug, "I think I'd prefer to stay inside...", None),
-  LogMessage(Warn, "Maybe you'll find someone else to help you.", None),
-  LogMessage(Info, "Maybe Black Mesa?", None),
-  LogMessage(Error, "That was a joke. Ha Ha. Fat Chance!", None)
+  Trace("Go ahead and leave me...", None),
+  Debug("I think I'd prefer to stay inside...", None),
+  Warn("Maybe you'll find someone else to help you.", None),
+  Info("Maybe Black Mesa?", None),
+  Error("That was a joke. Ha Ha. Fat Chance!", None)
 )
 
 ```

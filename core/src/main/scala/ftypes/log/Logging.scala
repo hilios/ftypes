@@ -18,17 +18,6 @@ trait Logging[F[_]] {
   def info (message: String, ex: Throwable)(implicit L: Logger[F]): F[Unit] = log(Info (message, Some(ex)))
   def warn (message: String, ex: Throwable)(implicit L: Logger[F]): F[Unit] = log(Warn (message, Some(ex)))
   def error(message: String, ex: Throwable)(implicit L: Logger[F]): F[Unit] = log(Error(message, Some(ex)))
-
-  @deprecated("Use the trace method without wrapping the exception in a Option.", "13.1.0")
-  def trace(message: String, ex: Option[Throwable])(implicit L: Logger[F]): F[Unit] = log(Trace(message, ex))
-  @deprecated("Use the trace method without wrapping the exception in a Option.", "13.1.0")
-  def debug(message: String, ex: Option[Throwable])(implicit L: Logger[F]): F[Unit] = log(Debug(message, ex))
-  @deprecated("Use the trace method without wrapping the exception in a Option.", "13.1.0")
-  def info (message: String, ex: Option[Throwable])(implicit L: Logger[F]): F[Unit] = log(Info (message, ex))
-  @deprecated("Use the trace method without wrapping the exception in a Option.", "13.1.0")
-  def warn (message: String, ex: Option[Throwable])(implicit L: Logger[F]): F[Unit] = log(Warn (message, ex))
-  @deprecated("Use the trace method without wrapping the exception in a Option.", "13.1.0")
-  def error(message: String, ex: Option[Throwable])(implicit L: Logger[F]): F[Unit] = log(Error(message, ex))
 }
 
 object Logging {

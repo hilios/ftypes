@@ -1,5 +1,7 @@
 package ftypes.kamon
 
+import java.time.Instant
+
 import cats.effect.IO
 import cats.implicits._
 import com.typesafe.config.Config
@@ -109,5 +111,21 @@ class KamonSpec extends FlatSpec with Matchers with Eventually with BeforeAndAft
     }
   }
 
-  "#trace" should "add metrics"
+  "#trace" should "not fail" in {
+    val test = kamon.trace("test.trace") { s =>
+      for {
+        _ <- s.tag("foo", "bar")
+        _ <- s.mark("zoo")
+        _ <- s.addError("Boom!", new Exception("Boom!"))
+        _ <- s.tagMetric("foo", "bar")
+        _ <- s.setOperationName("name")
+        _ <- s.enableMetrics()
+        _ <- s.disableMetrics()
+        _ <- s.nonEmpty()
+        _ <- IO(Thread.sleep(10))
+        _ <- s.finish(Instant.now())
+      } yield ()
+    }
+    test.unsafeRunSync()
+  }
 }

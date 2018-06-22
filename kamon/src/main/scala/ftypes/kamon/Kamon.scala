@@ -3,7 +3,6 @@ package ftypes.kamon
 import cats.effect.Concurrent
 import cats.implicits._
 import kamon.metric._
-import kamon.trace.Span
 import kamon.{Tags, Kamon => KamonMetrics}
 
 case class Kamon[F[_]]()(implicit F: Concurrent[F]) {
@@ -29,11 +28,9 @@ case class Kamon[F[_]]()(implicit F: Concurrent[F]) {
     t.stop()
   })
 
-  def trace[A](name: String)(fa: Span => F[A]): F[A] = bracket(F.delay {
-    KamonMetrics.buildSpan(name).start()
-  })(fa)(s => F.delay {
-    s.finish()
-  })
+  def trace[A](name: String)(fa: Span[F] => F[A]): F[A] = bracket(F.delay {
+    Span(KamonMetrics.buildSpan(name).start())
+  })(fa)(_.finish())
 
   def count(name: String, unit: MeasurementUnit = MeasurementUnit.none)
            (implicit tags: Tags = noTags): F[Unit] = fireAndForget {

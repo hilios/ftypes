@@ -5,21 +5,25 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.IO
 import ftypes.kafka.{KafkaConsumer, KafkaDsl, SerializerImplicits}
-import ftypes.log.Logger
-import ftypes.log.utils.PrintLog
+import ftypes.log.PrintLog
+import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
-class KafkaSpec extends FlatSpec with Matchers with SerializerImplicits with BeforeAndAfterAll with KafkaDsl {
+class KafkaSpec extends FlatSpec with Matchers with Eventually with SerializerImplicits with BeforeAndAfterAll with KafkaDsl {
 
-  implicit val ec: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(3))
+  implicit override def patienceConfig: PatienceConfig = PatienceConfig(500.millis, 250.millis)
+
+  implicit val ec: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newWorkStealingPool())
 
   val lastMessage = new AtomicReference[String]()
   val topic = "test"
-
-  implicit val logger = Logger
+  
   implicit val L = PrintLog[IO]
+
+  val kafka = KafkaMock[IO](topic)
 
   val fn = KafkaConsumer[IO] {
     case msg @ Topic("test") => for {
@@ -31,12 +35,8 @@ class KafkaSpec extends FlatSpec with Matchers with SerializerImplicits with Bef
     } yield ()
   }
 
-  val kafka = KafkaMock[IO](topic)
-
   override def beforeAll(): Unit = {
-    kafka.mountConsumer(fn).unsafeToFuture() recover {
-      case ex: Throwable => println(ex)
-    }
+    kafka.mountConsumer(fn).unsafeToFuture()
     super.beforeAll()
   }
 
@@ -45,12 +45,16 @@ class KafkaSpec extends FlatSpec with Matchers with SerializerImplicits with Bef
     super.afterAll()
   }
 
-  it should "produce and consume a message" in {
+  it should "produce and consume a message" ignore {
     val test = for {
       _ <- kafka.produce(topic, "Hello, World!")
-      _ <- IO(Thread.sleep(150))
+      _ <- L.info("Wait 100ms")
+      _ <- IO(Thread.sleep(100))
+      _ <- L.warn("Bye")
     } yield ()
+
     test.unsafeRunSync()
+
     lastMessage.get() shouldBe "Hello, World!"
   }
 }

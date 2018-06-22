@@ -5,7 +5,7 @@ import _root_.io.circe.{Decoder, Encoder}
 import cats.effect.IO
 import ftypes.kafka.circe._
 import ftypes.kafka.io.SimpleKafkaProducer
-import ftypes.log.extras.PrintLog
+import ftypes.log.PrintLog
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.scalatest._

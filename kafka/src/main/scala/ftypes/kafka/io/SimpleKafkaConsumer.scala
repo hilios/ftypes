@@ -3,21 +3,19 @@ package ftypes.kafka.io
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 
-import cats.effect.ConcurrentEffect
+import cats.effect.Concurrent
 import cats.implicits._
 import ftypes.kafka
 import ftypes.kafka.Return.{Ack, Error, NotFound}
 import ftypes.kafka._
-import ftypes.log.{Logger, Logging}
-import org.apache.kafka.clients.consumer.{ConsumerRebalanceListener, OffsetAndMetadata, Consumer => KafkaConsumer}
+import ftypes.log.Logging
+import org.apache.kafka.clients.consumer.{OffsetAndMetadata, Consumer => KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.JavaConverters._
 
 case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArray], topics: String*)
-                                    (implicit F: ConcurrentEffect[F], L: Logging[F]) extends Consumer[F] {
-
-  implicit val logger = Logger
+                                    (implicit F: Concurrent[F], L: Logging[F]) extends Consumer[F] {
 
   private val run = new AtomicBoolean()
 
@@ -41,9 +39,9 @@ case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArra
   } yield result
 
   private def pooling(fn: kafka.KafkaService[F]): F[Unit] = F.flatMap(for {
-    records <- consumer.poll(1).asScala.toList.pure[F]
+    records <- consumer.poll(50).asScala.toList.pure[F]
     _       <- {
-      val offsets = records.map(r => s"${r.topic()}(${r.offset()})").mkString(", ")
+      val offsets = records.map(r => s"${r.topic()}:${r.offset()}").mkString(", ")
       if (records.nonEmpty) L.debug(s"Consuming records $offsets")
       else F.pure(())
     }
@@ -71,14 +69,13 @@ case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArra
   } yield ()
 
   def start(fn: kafka.KafkaService[F]): F[Unit] = for {
-    _     <- F.delay(run.set(true))
-    fiber <- F.start(pooling(fn))
-    _     <- fiber.join
+    _ <- F.delay(run.set(true))
+    _ <- F.start(pooling(fn))
   } yield ()
 
   def stop: F[Unit] = for {
     _ <- L.info("Stopping consumer")
     _ <- F.delay(run.set(false))
-    _ <- F.delay(consumer.close())
+//    _ <- F.delay(consumer.close())
   } yield ()
 }

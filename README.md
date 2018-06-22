@@ -2,6 +2,8 @@
 
 ### General purpose type classes for building FP programs in Scala.
 
+[![Build Status](https://travis-ci.org/hilios/ftypes.svg?branch=master)](https://travis-ci.org/hilios/ftypes)
+
 ## Overview
 
 Ftypes is a collection of opinionated, general purpose type classes for writing pure functional programming in Scala. 

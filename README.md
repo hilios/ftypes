@@ -146,6 +146,7 @@ trait Consumers extends KafkaDsl {
 #### `SimpleKafkaConsumer[F]`
 
 ```scala
+import cats.effect.IO
 import ftypes.kafka.io._
 import java.util.Properties
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -158,7 +159,7 @@ object Main extends Consumers {
 
     val kafka = new KafkaConsumer[ByteArray, ByteArray](props)
 
-    val consumer = new SimpleKafkaConsumer(kafka, "my-topic-1", "my-topic-2")
+    val consumer = new SimpleKafkaConsumer[IO](kafka, "my-topic-1", "my-topic-2")
 
     consumer.mountConsumer(consumers) // Start consumer
     consumer.stop()
@@ -169,6 +170,7 @@ object Main extends Consumers {
 #### `SimpleKafkaProducer[F]`
 
 ```scala
+import cats.effect.IO
 import ftypes.kafka.io._
 import java.util.Properties
 import org.apache.kafka.clients.producer.KafkaProducer

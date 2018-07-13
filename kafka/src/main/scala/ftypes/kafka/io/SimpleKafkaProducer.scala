@@ -7,7 +7,7 @@ import ftypes.log.Logging
 import org.apache.kafka.clients.producer.{RecordMetadata, Producer => KafkaProducer}
 
 case class SimpleKafkaProducer[F[_]](producer: KafkaProducer[ByteArray, ByteArray])
-                                     (implicit F: Async[F], L: Logging[F]) extends Producer[F] {
+                                    (implicit F: Async[F], L: Logging[F]) extends Producer[F] {
 
   def produce(record: DefaultProducerRecord): F[Unit] = for {
     _ <- L.debug(s"Producing message to topic ${record.topic()}")

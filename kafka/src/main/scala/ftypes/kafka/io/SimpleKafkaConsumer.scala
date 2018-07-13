@@ -14,7 +14,7 @@ import org.apache.kafka.common.TopicPartition
 
 import scala.collection.JavaConverters._
 
-case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArray], topics: String*)
+case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArray], topics: Seq[String])
                                     (implicit F: Concurrent[F], L: Logging[F]) extends Consumer[F] {
 
   private val run = new AtomicBoolean()
@@ -33,27 +33,20 @@ case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArra
     else F.pure(())
   }
 
-  private def consume(fn: kafka.KafkaService[F], record: DefaultConsumerRecord): F[Return[F]] = for {
-    msg    <- Record(record).pure[F]
-    result <- fn.apply(msg)
-  } yield result
-
   private def pooling(fn: kafka.KafkaService[F]): F[Unit] = F.flatMap(for {
-    records <- consumer.poll(50).asScala.toList.pure[F]
-    _       <- {
-      val offsets = records.map(r => s"${r.topic()}:${r.offset()}").mkString(", ")
-      if (records.nonEmpty) L.debug(s"Consuming records $offsets")
+    rec <- consumer.poll(50).asScala.toList.pure[F]
+    _   <- {
+      val offsets = rec.map(r => s"${r.topic()}:${r.offset()}").mkString(", ")
+      if (rec.nonEmpty) L.debug(s"Consuming records $offsets")
       else F.pure(())
     }
-    ret <- records.traverse(consume(fn, _))
-    rec <- F.pure {
-      ret.filter {
-        case Ack(_)      => true
-        case Error(_, _) => true
-        case NotFound(_) => false
-      }.map(_.record.underlying)
-    }
-    _ <- commit(rec)
+    ret <- rec.map(Record(_)).traverse(fn.apply)
+    cmt <- ret.filter {
+      case Ack(_)      => true
+      case Error(_, _) => true
+      case NotFound(_) => false
+    }.map(_.record.underlying).pure[F]
+    _ <- commit(cmt)
   } yield ()) { _ =>
     if (run.get()) pooling(fn)
     else L.debug(s"Exiting inner consumer loop")
@@ -63,19 +56,21 @@ case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArra
     _  <- L.info(s"Starting consumer for topics ${topics.mkString(", ")}")
     fn <- kafka.seal(consumerDefinition).pure[F]
     _  <- F.delay {
-      consumer.subscribe(util.Arrays.asList(topics: _*))
+      if (topics.nonEmpty) consumer.subscribe(util.Arrays.asList(topics: _*))
+      run.set(true)
     }
-    _  <- start(fn)
-  } yield ()
-
-  def start(fn: kafka.KafkaService[F]): F[Unit] = for {
-    _ <- F.delay(run.set(true))
-    _ <- F.start(pooling(fn))
+    _  <- F.start(pooling(fn))
   } yield ()
 
   def stop: F[Unit] = for {
     _ <- L.info("Stopping consumer")
     _ <- F.delay(run.set(false))
-//    _ <- F.delay(consumer.close())
+    _ <- F.delay(consumer.close())
   } yield ()
+}
+
+object SimpleKafkaConsumer {
+  def apply[F[_]](consumer: KafkaConsumer[ByteArray, ByteArray], topic: String, topics: String*)
+                 (implicit F: Concurrent[F]): SimpleKafkaConsumer[F] =
+    new SimpleKafkaConsumer[F](consumer, topic +: topics)
 }

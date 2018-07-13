@@ -46,7 +46,7 @@ libraryDependencies += "com.github.hilios" %% "ftypes-core" % "0.1.0-SNAPSHOT"
 This will pull in the `ftype-core` module. Other functionalities can be imported as needed from other modules:
 
 ```sbt
-libraryDependencies += "com.github.hilios" %% "ftypes-test-utils"  % "0.1.0-SNAPSHOT"
+libraryDependencies += "com.github.hilios" %% "ftypes-kamon"       % "0.1.0-SNAPSHOT"
 libraryDependencies += "com.github.hilios" %% "ftypes-kafka"       % "0.1.0-SNAPSHOT"
 libraryDependencies += "com.github.hilios" %% "ftypes-kafka-circe" % "0.1.0-SNAPSHOT"
 ```
@@ -128,9 +128,9 @@ Provides a DSL similar to [http4s](https://http4s.org/) to create a topic consum
 Declare your consumers as a partial function with pattern matching for the topics:
 
 ```scala
-import ftypes.kafka.consumer._
+import ftypes.kafka._
 
-object Service extends KafkaDsl {
+trait Consumers extends KafkaDsl {
   def consumers = KafkaConsumer {
     case msg @ Topic("tweets") => for {
       m <- msg.as[String]
@@ -139,6 +139,51 @@ object Service extends KafkaDsl {
     case msg @ Topic("facebook") => for {
       m <- msg.as[String]
     } yield ()
+  }
+}
+```
+
+### `SimpleKafkaConsumer[F]`
+
+```
+import ftypes.kafka.io._
+import java.util.Properties
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.ByteArraySerializer
+
+object Main extends Consumers {
+  def main(args: Array[String]): Unit = {
+    val props = new Properties()
+    props.put("bootstrap.servers", "localhost:9092")
+
+    val kafka = new KafkaConsumer[ByteArray, ByteArray](props)
+
+    val consumer = new SimpleKafkaConsumer(kafka, "my-topic-1", "my-topic-2")
+
+    consumer.mountConsumer(consumers) // Start consumer
+    consumer.stop()
+  }
+}
+```
+
+### `SimpleKafkaProducer[F]`
+
+```
+import ftypes.kafka.io._
+import java.util.Properties
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.common.serialization.ByteArraySerializer
+
+object Main {
+  def main(args: Array[String]): Unit = {
+    val props = new Properties()
+    props.put("bootstrap.servers", "localhost:9092")
+
+    val kafka = new KafkaProducer[ByteArray, ByteArray](props)
+
+    val producer = new SimpleKafkaProducer[IO](kafka)
+    
+    producer.produce("my-topic", "Hello, World!")
   }
 }
 ```

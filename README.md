@@ -145,7 +145,7 @@ trait Consumers extends KafkaDsl {
 
 #### `SimpleKafkaConsumer[F]`
 
-```
+```scala
 import ftypes.kafka.io._
 import java.util.Properties
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -168,7 +168,7 @@ object Main extends Consumers {
 
 #### `SimpleKafkaProducer[F]`
 
-```
+```scala
 import ftypes.kafka.io._
 import java.util.Properties
 import org.apache.kafka.clients.producer.KafkaProducer

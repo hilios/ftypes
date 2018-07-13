@@ -3,14 +3,14 @@ package ftypes
 import cats.data.{Kleisli, OptionT}
 import cats.effect.Sync
 import ftypes.kafka.Return.{Ack, Error, NotFound}
-import org.apache.kafka.clients.consumer.{ConsumerRecord, Consumer => ApacheConsumer}
-import org.apache.kafka.clients.producer.{ProducerRecord, Producer => ApacheProducer}
+import org.apache.kafka.clients.consumer.{ConsumerRecord, Consumer => ApacheKafkaConsumer}
+import org.apache.kafka.clients.producer.{ProducerRecord, Producer => ApacheKafkaProducer}
 
-package object kafka {
+package object kafka extends KafkaDsl {
   type ByteArray = Array[Byte]
   type SingleMessage[T] = (String, T)
-  type DefaultConsumer = ApacheConsumer[ByteArray, ByteArray]
-  type DefaultProducer = ApacheProducer[ByteArray, ByteArray]
+  type DefaultConsumer = ApacheKafkaConsumer[ByteArray, ByteArray]
+  type DefaultProducer = ApacheKafkaProducer[ByteArray, ByteArray]
   type DefaultConsumerRecord = ConsumerRecord[ByteArray, ByteArray]
   type DefaultProducerRecord = ProducerRecord[ByteArray, ByteArray]
 

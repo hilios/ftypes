@@ -3,12 +3,12 @@ package ftypes.kafka.io
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
 import cats.effect.IO
-import ftypes.kafka.{ByteArray, KafkaConsumer, KafkaDsl}
+import ftypes.kafka._
 import ftypes.log.PrintLog
 import org.apache.kafka.clients.consumer.{ConsumerRecord, MockConsumer, OffsetResetStrategy}
 import org.apache.kafka.common.TopicPartition
-import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.concurrent.Eventually
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 

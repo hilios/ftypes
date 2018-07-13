@@ -1,7 +1,7 @@
 package ftypes.kafka.io
 
 import cats.effect.IO
-import ftypes.kafka.ByteArray
+import ftypes.kafka._
 import org.apache.kafka.clients.producer.{MockProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.scalatest.{FlatSpec, Matchers}

@@ -42,7 +42,7 @@ case class Kamon[F[_]]()(implicit F: Concurrent[F]) {
     KamonMetrics.histogram(name, unit).refine(tags).record(value)
   }
 
-  def sampler(name: String, unit: MeasurementUnit = MeasurementUnit.none)
+  def rangeSampler(name: String, unit: MeasurementUnit = MeasurementUnit.none)
              (fs: RangeSampler => Unit)
              (implicit tags: Tags = noTags): F[Unit] = fireAndForget {
     fs(KamonMetrics.rangeSampler(name, unit).refine(tags))

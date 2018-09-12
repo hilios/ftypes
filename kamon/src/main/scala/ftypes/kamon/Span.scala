@@ -6,41 +6,42 @@ import cats.effect.Concurrent
 import cats.implicits._
 import kamon.trace.{SpanContext, Span => KamonSpan}
 
-case class Span[F[_]](span: KamonSpan)(implicit F: Concurrent[F]) {
+case class Span[F[_]](underlying: KamonSpan)(implicit F: Concurrent[F]) {
 
-  private def fireAndForget[A](thunk: => A): F[Unit] = F.start(F.delay(thunk)).void
+  def apply[A](fs: KamonSpan => A): F[A] = F.delay(fs(underlying))
 
-  def isEmpty(): F[Boolean] = F.delay(span.isEmpty())
-  def isLocal(): F[Boolean] = F.delay(span.isLocal())
+  def isEmpty(): F[Boolean] = F.delay(underlying.isEmpty())
 
-  def nonEmpty(): F[Boolean] = F.delay(span.nonEmpty())
-  def isRemote(): F[Boolean] = F.delay(span.isRemote())
+  def isLocal(): F[Boolean] = F.delay(underlying.isLocal())
+  def nonEmpty(): F[Boolean] = F.delay(underlying.nonEmpty())
 
-  def context(): F[SpanContext] = F.delay(span.context())
+  def isRemote(): F[Boolean] = F.delay(underlying.isRemote())
 
-  def mark(key: String): F[Unit] = fireAndForget(span.mark(key))
+  def context(): F[SpanContext] = F.delay(underlying.context())
 
-  def mark(at: Instant, key: String): F[Unit] = fireAndForget(span.mark(at, key))
+  def mark(key: String): F[Unit] = F.delay(underlying.mark(key)).void
 
-  def tag(key: String, value: String): F[Unit] = fireAndForget(span.tag(key, value))
+  def mark(at: Instant, key: String): F[Unit] = F.delay(underlying.mark(at, key)).void
 
-  def tag(key: String, value: Long): F[Unit] = fireAndForget(span.tag(key, value))
+  def tag(key: String, value: String): F[Unit] = F.delay(underlying.tag(key, value)).void
 
-  def tag(key: String, value: Boolean): F[Unit] = fireAndForget(span.tag(key, value))
+  def tag(key: String, value: Long): F[Unit] = F.delay(underlying.tag(key, value)).void
 
-  def tagMetric(key: String, value: String): F[Unit] = fireAndForget(span.tagMetric(key, value))
+  def tag(key: String, value: Boolean): F[Unit] = F.delay(underlying.tag(key, value)).void
 
-  def addError(error: String): F[Unit] = fireAndForget(span.addError(error))
+  def tagMetric(key: String, value: String): F[Unit] = F.delay(underlying.tagMetric(key, value)).void
 
-  def addError(error: String, throwable: Throwable): F[Unit] = fireAndForget(span.addError(error, throwable))
+  def addError(error: String): F[Unit] = F.delay(underlying.addError(error)).void
 
-  def setOperationName(name: String): F[Unit] = fireAndForget(span.setOperationName(name))
+  def addError(error: String, throwable: Throwable): F[Unit] = F.delay(underlying.addError(error, throwable)).void
 
-  def enableMetrics(): F[Unit] = fireAndForget(span.enableMetrics())
+  def setOperationName(name: String): F[Unit] = F.delay(underlying.setOperationName(name)).void
 
-  def disableMetrics(): F[Unit] = fireAndForget(span.disableMetrics())
+  def enableMetrics(): F[Unit] = F.delay(underlying.enableMetrics()).void
 
-  def finish(at: Instant): F[Unit] = fireAndForget(span.finish(at))
+  def disableMetrics(): F[Unit] = F.delay(underlying.disableMetrics()).void
 
-  def finish(): F[Unit] = fireAndForget(span.finish())
+  def finish(at: Instant): F[Unit] = F.delay(underlying.finish(at)).void
+
+  def finish(): F[Unit] = F.delay(underlying.finish()).void
 }

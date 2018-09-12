@@ -47,6 +47,9 @@ lazy val kamon = (project in file("kamon"))
       "io.kamon" %% "kamon-executors" % Version.kamonExecutors,
       "io.kamon" %% "kamon-testkit"   % Version.kamonTestKit % Test
     ),
+    dependencyOverrides ++= Seq(
+      "io.kamon" %% "kamon-core"      % Version.kamon,
+    )
   )
 
 lazy val kafka = (project in file("kafka"))

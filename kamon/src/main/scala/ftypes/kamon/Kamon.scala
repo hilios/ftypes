@@ -1,15 +1,19 @@
 package ftypes.kamon
 
-import cats.effect.Concurrent
+import java.nio.ByteBuffer
+
+import cats.effect.{Concurrent, Sync}
 import cats.implicits._
-import kamon.metric._
-import kamon.{Tags, Kamon => KamonMetrics}
+import _root_.kamon.metric._
+import _root_.kamon.{Tags, Kamon => KamonMetrics}
+import _root_.kamon.context.Storage.Scope
+import _root_.kamon.context.{Context, Key}
+import _root_.kamon.trace.{Span => KamonSpan}
+import _root_.kamon.{Kamon => KamonMetrics}
 
 case class Kamon[F[_]]()(implicit F: Concurrent[F]) {
 
   private val noTags = Map.empty[String, String]
-
-  private def fireAndForget(thunk: => Unit): F[Unit] = F.start(F.delay(thunk)).void
 
   /**
     * Emulates a bracket using @jdegoes suggested implementation.
@@ -33,24 +37,43 @@ case class Kamon[F[_]]()(implicit F: Concurrent[F]) {
   })(fa)(_.finish())
 
   def count(name: String, unit: MeasurementUnit = MeasurementUnit.none)
-           (implicit tags: Tags = noTags): F[Unit] = fireAndForget {
+           (implicit tags: Tags = noTags): F[Unit] = F.delay {
     KamonMetrics.counter(name, unit).refine(tags).increment()
-  }
+  }.void
 
   def histogram(name: String, value: Long, unit: MeasurementUnit = MeasurementUnit.none)
-               (implicit tags: Tags = noTags): F[Unit] = fireAndForget {
+               (implicit tags: Tags = noTags): F[Unit] = F.delay {
     KamonMetrics.histogram(name, unit).refine(tags).record(value)
-  }
+  }.void
 
   def rangeSampler(name: String, unit: MeasurementUnit = MeasurementUnit.none)
              (fs: RangeSampler => Unit)
-             (implicit tags: Tags = noTags): F[Unit] = fireAndForget {
+             (implicit tags: Tags = noTags): F[Unit] = F.delay {
     fs(KamonMetrics.rangeSampler(name, unit).refine(tags))
-  }
+  }.void
 
   def gauge(name: String, unit: MeasurementUnit = MeasurementUnit.none)
            (fg: Gauge => Unit)
-           (implicit tags: Tags = noTags): F[Unit] = fireAndForget {
+           (implicit tags: Tags = noTags): F[Unit] = F.delay {
     fg(KamonMetrics.gauge(name, unit).refine(tags))
+  }.void
+}
+
+object Kamon {
+
+  def decode[F[_]](bytes: Array[Byte])(implicit F: Sync[F]): F[Context] = F.delay {
+    KamonMetrics.contextCodec().Binary.decode(ByteBuffer.wrap(bytes))
+  }
+
+  def encode[F[_]](context: Context)(implicit F: Sync[F]): F[Array[Byte]] = F.delay {
+    KamonMetrics.contextCodec().Binary.encode(context).array()
+  }
+
+  def currentContext[F[_]](implicit F: Sync[F]): F[Context] = F.delay(KamonMetrics.currentContext())
+
+  def currentSpan[F[_]](implicit F: Sync[F]): F[KamonSpan] = F.map(currentContext)(_.get(KamonSpan.ContextKey))
+
+  def scopeFor[F[_]](context: Context, span: KamonSpan)(implicit F: Sync[F]): F[Scope] = F.delay {
+    KamonMetrics.storeContext(context.withKey(KamonSpan.ContextKey, span))
   }
 }

@@ -2,10 +2,10 @@ package ftypes.log
 
 import cats.effect.{IO, Sync}
 import cats.implicits._
-import ftypes.log.LoggingSpec.TestLogging
+import ftypes.log.LoggerSpec.TestLogging
 import org.scalatest.{FlatSpec, Matchers}
 
-class LoggingSpec extends FlatSpec with Matchers {
+class LoggerSpec extends FlatSpec with Matchers {
   
   "Slf4jLogging" should "implicitly resolved in the context by the effect class" in {
     val test = new TestLogging[IO]
@@ -13,27 +13,27 @@ class LoggingSpec extends FlatSpec with Matchers {
   }
 
   "PrintLog" should "render the log" in {
-    implicit val print = PrintLog[IO]
+    implicit val print = ConsoleLogger[IO]
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
   }
 
   "SilentLog" should "render the log" in {
-    implicit val silent = SilentLog[IO]
+    implicit val silent = SilentLogger[IO]
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
 
     silent.messages should contain allOf (
-      Trace("Go ahead and leave me...", None),
-      Debug("I think I'd prefer to stay inside...", None),
-      Warn("Maybe you'll find someone else to help you.", None),
-      Info("Maybe Black Mesa?", None),
-      Error("That was a joke. Ha Ha. Fat Chance!", None)
+      LogMessage.TraceLog("Go ahead and leave me...", None),
+      LogMessage.DebugLog("I think I'd prefer to stay inside...", None),
+      LogMessage.WarnLog("Maybe you'll find someone else to help you.", None),
+      LogMessage.InfoLog("Maybe Black Mesa?", None),
+      LogMessage.ErrorLog("That was a joke. Ha Ha. Fat Chance!", None)
     )
   }
 
   it should "disable all logs" in {
-    implicit val silent = SilentLog[IO](Off)
+    implicit val silent = SilentLogger[IO](LogLevel.Off)
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
 
@@ -41,8 +41,8 @@ class LoggingSpec extends FlatSpec with Matchers {
   }
 }
 
-object LoggingSpec {
-  class TestLogging[F[_]](implicit F: Sync[F], L: Logging[F]) {
+object LoggerSpec {
+  class TestLogging[F[_]](implicit F: Sync[F], L: Logger[F]) {
     def prog: F[Unit] = for {
       _ <- L.trace("Go ahead and leave me...")
       _ <- L.debug("I think I'd prefer to stay inside...")

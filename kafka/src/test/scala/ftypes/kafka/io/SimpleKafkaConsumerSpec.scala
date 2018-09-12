@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
 import cats.effect.IO
 import ftypes.kafka._
-import ftypes.log.PrintLog
+import ftypes.log.ConsoleLogger
 import org.apache.kafka.clients.consumer.{ConsumerRecord, MockConsumer, OffsetResetStrategy}
 import org.apache.kafka.common.TopicPartition
 import org.scalatest.concurrent.Eventually
@@ -13,7 +13,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.JavaConverters._
 
 class SimpleKafkaConsumerSpec extends FlatSpec with Matchers with Eventually with KafkaDsl {
-  implicit val L = PrintLog[IO]
+  implicit val L = ConsoleLogger[IO]
 
   val lastMessage = new AtomicReference[String]()
 

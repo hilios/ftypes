@@ -1,28 +1,66 @@
+val Version = new {
+  val scala = Seq("2.11.12", "2.12.6")
+  val scalaMacroParadise = "2.1.0"
+  val kindProjector      = "0.9.6"
+
+  val scalatest = "3.0.5"
+  val scalamock = "4.1.0"
+
+  val cats       = "1.1.0"
+  val catsEffect = "0.10.1"
+
+  val logback         = "1.2.3"
+  val slf4j           = "1.7.25"
+  val sourcecode      = "0.1.4"
+
+  val kamon              = "1.1.3"
+  val kamonExecutors     = "1.0.2"
+  val kamonTestKit       = "1.1.1"
+
+  val circe  = "0.9.3"
+  val kafka  = "1.0.2"
+}
 
 lazy val ftypes = (project in file(".")).
-  aggregate(core, kafka, `kafka-circe`, kamon)
+  aggregate(log, kamon, kafka, `kafka-circe`)
   .settings(
     aggregate in update := false
   )
 
-lazy val core = (project in file("core"))
-  .settings(moduleName := "ftypes-core")
+lazy val log = (project in file("log"))
+  .settings(moduleName := "ftypes-log")
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-api"    % "1.8.0-beta2",
-      "org.slf4j" % "slf4j-simple" % "1.8.0-beta2" % Test,
-      compilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.patch)
+      "org.slf4j"    % "slf4j-api"    % Version.slf4j,
+      "org.slf4j"    % "slf4j-simple" % Version.slf4j % Test,
+      compilerPlugin("org.scalamacros" %% "paradise" % Version.scalaMacroParadise cross CrossVersion.patch)
     )
+  )
+
+lazy val kamon = (project in file("kamon"))
+  .settings(moduleName := "ftypes-kamon")
+  .settings(
+    inThisBuild(commonSettings),
+    libraryDependencies ++= Seq(
+      "io.kamon" %% "kamon-core"      % Version.kamon,
+      "io.kamon" %% "kamon-executors" % Version.kamonExecutors,
+      "io.kamon" %% "kamon-testkit"   % Version.kamonTestKit % Test
+    ),
   )
 
 lazy val kafka = (project in file("kafka"))
   .settings(moduleName := "ftypes-kafka")
-  .dependsOn(core % "test->test;compile->compile")
+  .configs(IntegrationTest)
+  .settings(Defaults.itSettings)
+  .dependsOn(log % "test->test;compile->compile")
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "org.apache.kafka"   % "kafka-clients" % "1.1.0" % Provided,
+      "org.apache.kafka" % "kafka-clients"   % Version.kafka,
+      "org.slf4j"        % "slf4j-api"       % Version.slf4j     % Provided,
+      "ch.qos.logback"   % "logback-classic" % Version.logback   % IntegrationTest,
+      "org.scalatest"   %% "scalatest"       % Version.scalatest % IntegrationTest
     )
   )
 
@@ -32,33 +70,38 @@ lazy val `kafka-circe` = (project in file("kafka-circe"))
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "io.circe"           %% "circe-core"       % "0.9.3" % Provided,
-      "io.circe"           %% "circe-parser"     % "0.9.3" % Provided,
-      "io.circe"           %% "circe-literal"    % "0.9.3" % Test,
-      "org.apache.kafka"    % "kafka-clients"    % "1.1.0" % Test,
+      "io.circe"           %% "circe-core"       % Version.circe % Provided,
+      "io.circe"           %% "circe-parser"     % Version.circe % Provided,
+      "io.circe"           %% "circe-literal"    % Version.circe % Test,
+      "org.apache.kafka"    % "kafka-clients"    % Version.kafka % Test,
     )
   )
 
-lazy val kamon = (project in file("kamon"))
-  .settings(moduleName := "ftypes-kamon")
-  .dependsOn(core % "test->test;compile->compile")
+lazy val `kafka-kamon` = (project in file("kafka-kamon"))
+  .settings(moduleName := "ftype-kafka-kamon")
+  .configs(IntegrationTest)
+  .settings(Defaults.itSettings)
+  .dependsOn(
+    kafka % "test->test;compile->compile",
+    kamon % "test->test;compile->compile"
+  )
   .settings(
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
-      "io.kamon" %% "kamon-core"    % "1.1.2",
-      "io.kamon" %% "kamon-testkit" % "1.1.1" % Test
+      "ch.qos.logback"    % "logback-classic" % Version.logback   % IntegrationTest,
+      "org.scalatest"    %% "scalatest"       % Version.scalatest % IntegrationTest,
     )
   )
 
 lazy val commonSettings = Seq(
   organization := "com.github.hilios",
   version := "0.1.0-SNAPSHOT",
-  crossScalaVersions := Seq("2.11.12", "2.12.6"),
+  crossScalaVersions := Version.scala,
   libraryDependencies ++= Seq(
-    "org.scalatest"      %% "scalatest"        % "3.0.5"  % Test,
-    "org.typelevel"      %% "cats-core"        % "1.1.0"  % Provided,
-    "org.typelevel"      %% "cats-effect"      % "0.10.1" % Provided,
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
+    "org.typelevel" %% "cats-core"   % Version.cats       % Provided,
+    "org.typelevel" %% "cats-effect" % Version.catsEffect % Provided,
+    "org.scalatest" %% "scalatest"   % Version.scalatest  % Test,
+    compilerPlugin("org.spire-math" %% "kind-projector" % Version.kindProjector)
   ),
   autoCompilerPlugins := true,
   fork in test := true,

@@ -4,14 +4,14 @@ import scala.annotation.tailrec
 import scala.reflect.macros.blackbox
 import org.slf4j.LoggerFactory
 
-final class EnclosingClass(val name: String) {
+final case class EnclosingClass(name: String) {
   lazy val logger = LoggerFactory.getLogger(name)
 }
 
 object EnclosingClass {
 
-  implicit def apply: EnclosingClass = macro materializeEnclosingClass
-  
+  implicit def materialize: EnclosingClass = macro materializeEnclosingClass
+
   final def materializeEnclosingClass(c: blackbox.Context): c.Expr[EnclosingClass] = {
     import c.universe._
 

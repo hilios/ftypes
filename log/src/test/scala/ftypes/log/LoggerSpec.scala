@@ -7,18 +7,18 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class LoggerSpec extends FlatSpec with Matchers {
   
-  "Slf4jLogging" should "implicitly resolved in the context by the effect class" in {
+  "Slf4jLogger" should "implicitly resolved in the context by the effect class" in {
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
   }
 
-  "PrintLog" should "render the log" in {
+  "ConsoleLogger" should "render the log" in {
     implicit val print = ConsoleLogger[IO]
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
   }
 
-  "SilentLog" should "render the log" in {
+  "SilentLogger" should "render the log" in {
     implicit val silent = SilentLogger[IO]
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
@@ -38,6 +38,15 @@ class LoggerSpec extends FlatSpec with Matchers {
     test.prog.unsafeRunSync()
 
     silent.messages shouldBe empty
+  }
+
+  "#andThen" should "combine multiple logs instances" in {
+    val silent = SilentLogger[IO]
+    implicit val logger = silent andThen ConsoleLogger[IO] andThen Slf4jLogger[IO]
+    
+    val test = new TestLogging[IO]
+    test.prog.unsafeRunSync()
+    silent.messages should have length 5
   }
 }
 

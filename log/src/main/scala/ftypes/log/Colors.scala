@@ -1,5 +1,5 @@
 package ftypes.log
 
 trait Colors {
-  def get(log: LogMessage): String
+  def get(log: Message): String
 }

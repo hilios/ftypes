@@ -8,14 +8,14 @@ import cats.implicits._
 import ftypes.kafka
 import ftypes.kafka.Return.{Ack, Error, NotFound}
 import ftypes.kafka._
-import ftypes.log.Logger
+import ftypes.log.Logging
 import org.apache.kafka.clients.consumer.{OffsetAndMetadata, Consumer => KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 
 import scala.collection.JavaConverters._
 
 case class SimpleKafkaConsumer[F[_]](consumer: KafkaConsumer[ByteArray, ByteArray], topics: Seq[String])
-                                    (implicit F: Concurrent[F], L: Logger[F]) extends Consumer[F] {
+                                    (implicit F: Concurrent[F], L: Logging[F]) extends Consumer[F] {
 
   private val run = new AtomicBoolean()
 

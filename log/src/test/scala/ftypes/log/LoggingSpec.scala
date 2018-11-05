@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class LoggingSpec extends FlatSpec with Matchers {
   
-  "Slf4jLogger" should "implicitly resolved in the context by the effect class" in {
+  "DefaultLogger" should "implicitly resolved in the context by the effect class" in {
     val test = new TestLogging[IO]
     test.prog.unsafeRunSync()
   }

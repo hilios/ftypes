@@ -2,14 +2,13 @@ package ftypes.kamon
 
 import java.nio.ByteBuffer
 
+import _root_.kamon.context.Context
+import _root_.kamon.context.Storage.Scope
+import _root_.kamon.metric._
+import _root_.kamon.trace.{Span => KamonSpan}
+import _root_.kamon.{Tags, Kamon => KamonMetrics}
 import cats.effect.{Concurrent, Sync}
 import cats.implicits._
-import _root_.kamon.metric._
-import _root_.kamon.{Tags, Kamon => KamonMetrics}
-import _root_.kamon.context.Storage.Scope
-import _root_.kamon.context.{Context, Key}
-import _root_.kamon.trace.{Span => KamonSpan}
-import _root_.kamon.{Kamon => KamonMetrics}
 
 case class Kamon[F[_]]()(implicit F: Concurrent[F]) {
 

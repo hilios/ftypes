@@ -5,7 +5,7 @@ import cats.effect.Sync
 import cats.implicits._
 
 case class ConsoleLogger[F[_]](level: Level)(implicit F: Sync[F], S: Show[Message]) extends Logging[F] {
-  def log(cls: UnderlyingLogger[F], message: Message): F[Unit] = F.delay {
+  def log(logger: Logger[F], message: Message): F[Unit] = F.delay {
     if(message.level >= level) println(S.show(message))
   }
 }

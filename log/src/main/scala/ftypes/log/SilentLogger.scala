@@ -12,7 +12,7 @@ case class SilentLogger[F[_]](level: Level)(implicit F: Sync[F]) extends Logging
 
   def clear(): Unit = _messages.clear()
 
-  def log(cls: UnderlyingLogger[F], message: Message): F[Unit] = F.delay {
+  def log(logger: Logger[F], message: Message): F[Unit] = F.delay {
     if (message.level >= level) _messages += message
   }
 }

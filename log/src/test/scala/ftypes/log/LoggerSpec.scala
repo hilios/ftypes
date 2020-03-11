@@ -1,10 +1,17 @@
 package ftypes.log
 
 import cats.effect.IO
-import org.scalatest.{FlatSpec, Matchers}
+import ftypes.log.loggers.{ConsoleLogger, SilentLogger}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class LoggerSpec extends FlatSpec with Matchers {
-  "#logger" should "materialize an instance logger instance with the owner class name" in {
-    Logger[IO].name shouldBe "ftypes.log.LoggerSpec"
+class LoggerSpec extends AnyFlatSpec with Matchers {
+
+  "#andThen" should "combine multiple logger instances" in {
+    val silent = SilentLogger[IO]
+    implicit val logger: Logger[IO] = ConsoleLogger[IO] andThen silent
+
+    StillAlive[IO].log.unsafeRunSync()
+    silent.messages should have length 5
   }
 }

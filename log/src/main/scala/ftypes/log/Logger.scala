@@ -1,31 +1,30 @@
 package ftypes.log
 
-import cats.effect.Sync
-import ftypes.log.impl.Slf4jLogger
+import cats.{Applicative, Apply, Monoid}
+import sourcecode.{Enclosing, Line}
 
-import scala.annotation.tailrec
-import scala.reflect.macros.blackbox
+trait Logger[F[_]] { self =>
+  def log(message: Message, enclosing: Enclosing, line: Line): F[Unit]
 
-trait Logger[F[_]] {
-  def name: String
+  def andThen(that: Logger[F])(implicit ap: Apply[F]): Logger[F] = new Logger[F] {
 
-  def log(message: Message): F[Unit]
+    def log(message: Message, enclosing: Enclosing, line: Line): F[Unit] =
+      ap.productR(self.log(message, enclosing, line))(that.log(message, enclosing, line))
+  }
 }
 
 object Logger {
-  implicit def apply[F[_]](implicit F: Sync[F]): Logger[F] = macro materializeSlf4jLogger[F]
 
-  def materializeSlf4jLogger[F[_]](c: blackbox.Context)(F: c.Expr[Sync[F]]): c.Expr[Slf4jLogger[F]] = {
-    import c.universe._
+  implicit def apply[F[_] : Applicative]: Logger[F] = void
 
-    @tailrec def getClassSymbol(s: Symbol): Symbol = if (s.isClass || s.isModule) s
-    else getClassSymbol(s.owner)
+  def void[F[_]](implicit F: Applicative[F]): Logger[F] = new Logger[F] {
+    def log(message: Message, enclosing: Enclosing, line: Line): F[Unit] = F.unit
+  }
 
-    val cls = getClassSymbol(c.internal.enclosingOwner)
-    val name = cls.fullName.stripSuffix("$").stripSuffix(".$anon").stripSuffix(".$anonfun")
+  implicit def monoidInstanceForLogger[F[_]](implicit F: Applicative[F]): Monoid[Logger[F]] = new Monoid[Logger[F]] {
+    def empty: Logger[F] = Logger.void
 
-    assert(cls.isClass || cls.isModule, "Enclosing class is always either a module or a class")
-    c.Expr[Slf4jLogger[F]](q"""new ftypes.log.impl.Slf4jLogger($name)($F)""")
+    def combine(x: Logger[F], y: Logger[F]): Logger[F] = x andThen y
   }
 }
 

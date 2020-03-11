@@ -1,10 +1,10 @@
 # F[types]
 
-### Lifting impure code into F[_] since 2019.
+### Lifting impure code into F[] since 2018.
 
 [![Build Status](https://travis-ci.org/hilios/ftypes.svg?branch=master)](https://travis-ci.org/hilios/ftypes)
 
-## Overview
+## Overview                             s
 
 **F[types]** is a collection of opinionated algebras for writing pure functional programming in Scala.
  

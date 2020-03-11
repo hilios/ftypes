@@ -30,13 +30,9 @@ lazy val kamon = (project in file("kamon"))
     inThisBuild(commonSettings),
     libraryDependencies ++= Seq(
       Libs.catsEffect,
-      "io.kamon" %% "kamon-core"      % Version.kamon,
-      "io.kamon" %% "kamon-executors" % Version.kamonExecutors,
-      "io.kamon" %% "kamon-testkit"   % Version.kamonTestKit % Test
+      Libs.kamonCore,
+      Libs.kamonTestKit % Test,
     ),
-    dependencyOverrides ++= Seq(
-      "io.kamon" %% "kamon-core"      % Version.kamon,
-    )
   )
 
 lazy val commonSettings = Seq(

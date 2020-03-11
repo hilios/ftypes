@@ -23,9 +23,7 @@ object Dependencies {
     val slf4j           = "1.7.30"
     val sourcecode      = "0.1.9"
     
-    val kamon              = "1.1.3"
-    val kamonExecutors     = "1.0.2"
-    val kamonTestKit       = "1.1.1"
+    val kamonCore         = "2.0.5"
   }
 
   val Libs = new {
@@ -42,6 +40,8 @@ object Dependencies {
     val sourcecode       = "com.lihaoyi"     %% "sourcecode"         % Version.sourcecode
 
     // Kamon
+    val kamonCore    = "io.kamon" %% "kamon-core"    % Version.kamonCore
+    val kamonTestKit = "io.kamon" %% "kamon-testkit" % Version.kamonCore
 
     // Testing
     val scalaTest        = "org.scalatest"   %% "scalatest"          % Version.scalatest

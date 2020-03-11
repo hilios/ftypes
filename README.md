@@ -1,12 +1,12 @@
-# [F]types
+# F[types]
 
-### Makes easy build FP programs in Scala by lifting.
+### Lifting impure code into F[_] since 2019.
 
 [![Build Status](https://travis-ci.org/hilios/ftypes.svg?branch=master)](https://travis-ci.org/hilios/ftypes)
 
 ## Overview
 
-[F]types is a collection of opinionated algebras for writing pure functional programming in Scala.
+**F[types]** is a collection of opinionated algebras for writing pure functional programming in Scala.
  
 It aims to close the gap between impure code that it's needed to develop production grade software with the FP 
 goodies available on [cats](https://github.com/typelevel/cats).

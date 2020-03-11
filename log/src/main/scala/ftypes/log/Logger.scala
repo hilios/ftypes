@@ -15,7 +15,7 @@ trait Logger[F[_]] { self =>
 
 object Logger {
 
-  implicit def apply[F[_] : Applicative]: Logger[F] = void
+  implicit def apply[F[_]: Applicative]: Logger[F] = void
 
   def void[F[_]](implicit F: Applicative[F]): Logger[F] = new Logger[F] {
     def log(message: Message, enclosing: Enclosing, line: Line): F[Unit] = F.unit
@@ -27,4 +27,3 @@ object Logger {
     def combine(x: Logger[F], y: Logger[F]): Logger[F] = x andThen y
   }
 }
-

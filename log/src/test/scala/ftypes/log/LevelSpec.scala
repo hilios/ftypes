@@ -15,20 +15,20 @@ class LevelSpec extends AnyFlatSpec with Matchers {
     val error: Level = Level.Error
     val off: Level   = Level.Off
 
-    all   < trace shouldBe true
+    all < trace shouldBe true
     trace < debug shouldBe true
-    debug < info  shouldBe true
-    info  < warn  shouldBe true
-    warn  < error shouldBe true
-    error < off   shouldBe true
+    debug < info shouldBe true
+    info < warn shouldBe true
+    warn < error shouldBe true
+    error < off shouldBe true
   }
 
   it should "have a show instance" in {
-    Show[Level].show(Level.Trace) should include (s"[trace]")
-    Show[Level].show(Level.Debug) should include (s"[debug]")
-    Show[Level].show(Level.Info) should include (s"[info]")
-    Show[Level].show(Level.Warn) should include (s"[warn]")
-    Show[Level].show(Level.Error) should include (s"[error]")
+    Show[Level].show(Level.Trace) should include(s"[trace]")
+    Show[Level].show(Level.Debug) should include(s"[debug]")
+    Show[Level].show(Level.Info) should include(s"[info]")
+    Show[Level].show(Level.Warn) should include(s"[warn]")
+    Show[Level].show(Level.Error) should include(s"[error]")
   }
 
   "#name" should "return the level name" in {
@@ -48,10 +48,10 @@ class LevelSpec extends AnyFlatSpec with Matchers {
     val Level.Debug(debug, _) = Message(Level.Debug, "Debug", None)
     debug shouldBe "Debug"
 
-    val Level.Info(info, _)   = Message(Level.Info,  "Info",  None)
+    val Level.Info(info, _) = Message(Level.Info, "Info", None)
     info shouldBe "Info"
-    
-    val Level.Warn(warn, _)   = Message(Level.Warn,  "Warn",  None)
+
+    val Level.Warn(warn, _) = Message(Level.Warn, "Warn", None)
     warn shouldBe "Warn"
 
     val Level.Error(error, _) = Message(Level.Error, "Error", None)

@@ -7,14 +7,14 @@ trait Log[F[_]] {
 
   @inline def trace(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit] =
     log(Level.Trace(message, None), enclosing, line)
-  
+
   @inline def debug(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit] =
     log(Level.Debug(message, None), enclosing, line)
 
-  @inline def info(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit]  =
+  @inline def info(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit] =
     log(Level.Info(message, None), enclosing, line)
 
-  @inline def warn(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit]  =
+  @inline def warn(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit] =
     log(Level.Warn(message, None), enclosing, line)
 
   @inline def error(message: String)(implicit enclosing: Enclosing, line: Line): F[Unit] =

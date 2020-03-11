@@ -11,7 +11,7 @@ final case class SilentLogger[F[_]](level: Level)(implicit F: Sync[F]) extends L
   val messages: mutable.Queue[Message] = mutable.Queue()
 
   def log(message: Message, enclosing: Enclosing, line: Line): F[Unit] = F.delay {
-    if(message.level >= level) messages.enqueue(message)
+    if (message.level >= level) messages.enqueue(message)
   }
 }
 

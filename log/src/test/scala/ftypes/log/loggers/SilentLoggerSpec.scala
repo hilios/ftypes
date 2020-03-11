@@ -14,12 +14,12 @@ class SilentLoggerSpec extends AnyFlatSpec with Matchers {
     logger.messages should contain allOf (
       Message(Level.Trace, "Go ahead and leave me...", None),
       Message(Level.Debug, "I think I'd prefer to stay inside...", None),
-      Message(Level.Warn,  "Maybe you'll find someone else to help you.", None),
-      Message(Level.Info,  "Maybe Black Mesa?", None),
+      Message(Level.Warn, "Maybe you'll find someone else to help you.", None),
+      Message(Level.Info, "Maybe Black Mesa?", None),
       Message(Level.Error, "That was a joke. Ha Ha. Fat Chance!", None)
     )
   }
-  
+
   it should "allow to control the log level" in {
     implicit val logger = SilentLogger[IO](Level.Off)
     StillAlive[IO].log.unsafeRunSync()

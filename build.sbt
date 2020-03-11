@@ -32,6 +32,7 @@ lazy val kamon = (project in file("kamon"))
       Libs.catsEffect,
       Libs.kamonCore,
       Libs.kamonTestKit % Test,
+      Libs.scalaTest    % Test,
     ),
   )
 
